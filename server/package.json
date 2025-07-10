@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Phan Van Minh Nhut",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
