@@ -1,8 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
+import HomePageAD from '../Views/HomePageAD.vue'
+import HomePage from '../Views/HomePage.vue'
 
 const routes = [
-  { path: '/', component: Home }
+  { path: '/',
+    name: HomePage,
+    component: HomePage
+  },
+  {
+    path: '/admin/home',
+    name: HomePageAD,
+    component: HomePageAD
+  }
 ]
 
 const router = createRouter({
