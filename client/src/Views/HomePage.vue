@@ -1,103 +1,124 @@
 <template>
-  <div class="home-page">
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <h1>Thư viện Tri thức</h1>
-        <p>Chào mừng bạn đến với thư viện số hiện đại - nơi hội tụ tri thức và cảm hứng. Khám phá hàng nghìn đầu sách chất lượng cao, phục vụ mọi nhu cầu học tập và nghiên cứu.</p>
+  <div>
+    <!-- NavBar -->
+    <NavBar />
 
-        <div class="hero-stats">
-          <div class="hero-stat" v-for="(value, key) in stats" :key="key">
-            <div class="hero-stat-number">{{ value.toLocaleString() }}</div>
-            <div class="hero-stat-label">{{ getStatLabel(key) }}</div>
+    <!-- Nội dung chính -->
+    <div class="home-page">
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="container">
+          <h1>Thư viện Tri thức</h1>
+          <p>
+            Chào mừng bạn đến với thư viện số hiện đại - nơi hội tụ tri thức và cảm hứng.
+            Khám phá hàng nghìn đầu sách chất lượng cao, phục vụ mọi nhu cầu học tập và nghiên cứu.
+          </p>
+          <div class="hero-stats">
+            <div class="hero-stat" v-for="(value, key) in stats" :key="key">
+              <div class="hero-stat-number">{{ value.toLocaleString() }}</div>
+              <div class="hero-stat-label">{{ getStatLabel(key) }}</div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Welcome Message -->
-    <section class="container">
-      <div class="welcome-message">
-        <h2>Khám phá thế giới sách</h2>
-        <p>Hãy bắt đầu hành trình khám phá tri thức với những cuốn sách được chọn lọc kỹ càng.</p>
-      </div>
-    </section>
-
-    <!-- Featured Books -->
-    <section class="container">
-      <div class="section">
-        <h2 class="section-title">
-          <i class="fas fa-star"></i> Sách nổi bật
-        </h2>
-        <div class="books-grid">
-          <BookCard
-            v-for="book in featuredBooks"
-            :key="book.id"
-            :book="book"
-            @borrow="borrowBook"
-            @view="viewDetails"
-          />
+      <!-- Welcome Message -->
+      <section class="container">
+        <div class="welcome-message">
+          <h2>Khám phá thế giới sách</h2>
+          <p>Hãy bắt đầu hành trình khám phá tri thức với những cuốn sách được chọn lọc kỹ càng.</p>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Recent Books -->
-    <section class="container">
-      <div class="section">
-        <h2 class="section-title">
-          <i class="fas fa-plus-circle"></i> Sách mới cập nhật
-        </h2>
-        <div class="books-grid">
-          <BookCard
-            v-for="book in recentBooks"
-            :key="book.id"
-            :book="book"
-            @borrow="borrowBook"
-            @view="viewDetails"
-          />
+      <!-- Featured Books -->
+      <section class="container">
+        <div class="section">
+          <h2 class="section-title">
+            <i class="fas fa-star"></i> Sách nổi bật
+          </h2>
+          <div class="books-grid">
+            <BookCard
+              v-for="book in featuredBooks"
+              :key="book.id"
+              :book="book"
+              @borrow="borrowBook"
+              @view="viewDetails"
+            />
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- Recent Books -->
+      <section class="container">
+        <div class="section">
+          <h2 class="section-title">
+            <i class="fas fa-plus-circle"></i> Sách mới cập nhật
+          </h2>
+          <div class="books-grid">
+            <BookCard
+              v-for="book in recentBooks"
+              :key="book.id"
+              :book="book"
+              @borrow="borrowBook"
+              @view="viewDetails"
+            />
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
 
-<script setup>
-import { reactive } from 'vue'
+<script>
+import NavBar from '@/components/Client/NavBar.vue'
+import Footer from '@/components/Client/Footer.vue'
 import BookCard from '@/components/BookCard.vue'
 
-const stats = reactive({
-  totalBooks: 28547,
-  availableBooks: 23850,
-  totalMembers: 15240
-})
-
-const featuredBooks = reactive([
-  { id: 1, title: 'Lập trình JS', author: 'Nguyễn Văn A', status: 'available', category: 'technology' },
-  { id: 2, title: 'Quản trị hiện đại', author: 'Trần Thị B', status: 'borrowed', category: 'business' },
-  { id: 3, title: 'Lịch sử thế giới', author: 'Lê Văn C', status: 'available', category: 'history' }
-])
-
-const recentBooks = reactive([
-  { id: 4, title: 'Blockchain', author: 'Đặng Hùng', status: 'available', category: 'technology' },
-  { id: 5, title: 'Triết học Đông phương', author: 'Bùi Thị Nga', status: 'available', category: 'philosophy' }
-])
-
-function getStatLabel(key) {
-  return {
-    totalBooks: 'Đầu sách',
-    availableBooks: 'Sách có sẵn',
-    totalMembers: 'Thành viên'
-  }[key] || ''
-}
-
-function borrowBook(book) {
-  if (book.status === 'available') {
-    alert(`Yêu cầu mượn sách: ${book.title}`)
+export default {
+  name: 'HomePage',
+  components: {
+    NavBar,
+    Footer,
+    BookCard
+  },
+  data() {
+    return {
+      stats: {
+        totalBooks: 28547,
+        availableBooks: 23850,
+        totalMembers: 15240
+      },
+      featuredBooks: [
+        { id: 1, title: 'Lập trình JS', author: 'Nguyễn Văn A', status: 'available', category: 'technology' },
+        { id: 2, title: 'Quản trị hiện đại', author: 'Trần Thị B', status: 'borrowed', category: 'business' },
+        { id: 3, title: 'Lịch sử thế giới', author: 'Lê Văn C', status: 'available', category: 'history' }
+      ],
+      recentBooks: [
+        { id: 4, title: 'Blockchain', author: 'Đặng Hùng', status: 'available', category: 'technology' },
+        { id: 5, title: 'Triết học Đông phương', author: 'Bùi Thị Nga', status: 'available', category: 'philosophy' }
+      ]
+    }
+  },
+  methods: {
+    getStatLabel(key) {
+      return {
+        totalBooks: 'Đầu sách',
+        availableBooks: 'Sách có sẵn',
+        totalMembers: 'Thành viên'
+      }[key] || ''
+    },
+    borrowBook(book) {
+      if (book.status === 'available') {
+        alert(`Yêu cầu mượn sách: ${book.title}`)
+      }
+    },
+    viewDetails(book) {
+      alert(`Chi tiết sách:\nTiêu đề: ${book.title}\nTác giả: ${book.author}`)
+    }
   }
-}
-
-function viewDetails(book) {
-  alert(`Chi tiết sách:\nTiêu đề: ${book.title}\nTác giả: ${book.author}`)
 }
 </script>
 
@@ -161,7 +182,7 @@ function viewDetails(book) {
 .welcome-message {
   text-align: center;
   color: white;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(59, 43, 43, 0.1);
   padding: 2rem;
   border-radius: 1rem;
   margin-bottom: 3rem;

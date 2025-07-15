@@ -63,7 +63,7 @@ export default {
 
 <style scoped>
 .footer-wrapper {
-  background-color: #51565b;
+  background-color: #23379dac;
   text-align: center;
   padding: 40px 20px;
   font-family: 'Segoe UI', sans-serif;

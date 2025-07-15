@@ -1,5 +1,9 @@
 <template>
   <nav class="navbar">
+    <!-- Ảnh logo nằm ngoài ô trắng -->
+    <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+
+    <!-- Menu điều hướng bên trong ô trắng -->
     <div class="nav-container">
       <ul class="nav-menu">
         <li class="nav-item">
@@ -13,7 +17,6 @@
             <span>Trang chủ</span>
           </a>
         </li>
-        
         <li class="nav-item">
           <a 
             href="#" 
@@ -25,7 +28,6 @@
             <span>Danh mục sách</span>
           </a>
         </li>
-        
         <li class="nav-item">
           <a 
             href="#" 
@@ -37,7 +39,6 @@
             <span>Lịch sử mượn</span>
           </a>
         </li>
-        
         <li class="nav-item">
           <a 
             href="#" 
@@ -49,12 +50,11 @@
             <span>Tài khoản</span>
           </a>
         </li>
-        
-
       </ul>
     </div>
   </nav>
 </template>
+
 
 <script>
 import { ref, defineEmits } from 'vue'
@@ -82,9 +82,11 @@ export default {
 
 <style scoped>
 .navbar {
-  background: #4f46e5;
-  padding: 16px 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #302bb7;
+  padding: 12px 24px;
+  display: flex; /* Cho ảnh và container cùng hàng */
+  align-items: center;
+  gap: 16px;
   position: fixed;
   top: 0;
   left: 0;
@@ -92,13 +94,25 @@ export default {
   z-index: 1000;
 }
 
+.nav-logo {
+  height: 56px;
+  width: auto;
+  border-radius: 10px;
+  background: white;
+  padding: 2px;
+  margin-left: 40px;
+}
+
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1200px; 
+  width: 100%;
+  margin: 10px auto;
+  margin-left: 40px;
   background: white;
   border-radius: 12px;
   padding: 8px 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  flex: 1;
 }
 
 .nav-menu {
@@ -128,8 +142,8 @@ export default {
   border-radius: 8px;
   transition: all 0.2s ease;
   position: relative;
-  min-width: 120px;
   justify-content: center;
+  min-width: 120px;
 }
 
 .nav-link:hover {
@@ -163,30 +177,11 @@ export default {
   opacity: 1;
 }
 
-/* Responsive */
+/* Responsive logo (tuỳ chọn) */
 @media (max-width: 768px) {
-  .navbar {
-    padding: 12px 16px;
-  }
-  
-  .nav-container {
-    padding: 8px 8px;
-  }
-  
-  .nav-link {
-    min-width: auto;
-    padding: 12px 8px;
-    font-size: 14px;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .nav-link span {
-    font-size: 12px;
-  }
-  
-  .nav-link i {
-    font-size: 18px;
+  .nav-logo {
+    height: 36px;
   }
 }
+
 </style>

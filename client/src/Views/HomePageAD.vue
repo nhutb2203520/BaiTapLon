@@ -64,7 +64,7 @@ import { ref, reactive, onMounted } from 'vue'
 import NavBarAD from '../components/Admin/NavBarAD.vue'
 
 export default {
-  name: 'HomePage',
+  name: 'HomePageAD',
   components: {
     NavBarAD
   },
@@ -193,7 +193,7 @@ export default {
 }
 
 .content {
-  margin-top: 10px;
+  margin-top: 60px;
   padding: 40px 24px;
   max-width: 1200px;
   margin-left: auto;

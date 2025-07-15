@@ -1,27 +1,38 @@
 <template>
   <nav class="navbar">
-    <ul class="nav-menu">
-      <li>
-        <a
-          href="#"
-          :class="{ active: activeTab === 'home' }"
-          @click.prevent="$emit('tab-changed', 'home')"
-        >
-          <i class="fas fa-home"></i>
-          <span>Trang Quản Lý</span>
-        </a>
-      </li>
-      <li>
-        <a
-          href="#"
-          :class="{ active: activeTab === 'account' }"
-          @click.prevent="$emit('tab-changed', 'account')"
-        >
-          <i class="fas fa-user"></i>
-          <span>Tài khoản</span>
-        </a>
-      </li>
-    </ul>
+    <div class="navbar-content">
+      <!-- Left: Logo -->
+      <div class="navbar-left">
+        <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+      </div>
+
+      <!-- Center: Menu -->
+      <ul class="nav-menu">
+        <li>
+          <a
+            href="#"
+            :class="{ active: activeTab === 'home' }"
+            @click.prevent="$emit('tab-changed', 'home')"
+          >
+            <i class="fas fa-home"></i>
+            <span>Trang Quản Lý</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="#"
+            :class="{ active: activeTab === 'account' }"
+            @click.prevent="$emit('tab-changed', 'account')"
+          >
+            <i class="fas fa-user"></i>
+            <span>Tài khoản</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Right: Trống (dự phòng) -->
+      <div class="navbar-right"></div>
+    </div>
   </nav>
 </template>
 
@@ -40,7 +51,7 @@ export default {
 <style scoped>
 .navbar {
   background: #4f46e5;
-  padding: 16px 0;
+  padding: 12px 0;
   position: fixed;
   top: 0;
   left: 0;
@@ -48,13 +59,43 @@ export default {
   z-index: 1000;
 }
 
-.nav-menu {
+.navbar-content {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+.navbar-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.nav-logo {
+  height: 56px;
+  width: auto;
+  border-radius: 10px;
+  background: white;
+  padding: 2px;
+  margin-left: 0px; 
+}
+
+.nav-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center; 
   list-style: none;
   gap: 60px;
-  padding: 0;
+  padding: 10px;
   margin: 0;
+  align-items: center;
+}
+
+.navbar-right {
+  flex: 1;
 }
 
 .nav-menu li a {
