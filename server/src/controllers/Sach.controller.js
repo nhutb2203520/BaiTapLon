@@ -11,7 +11,7 @@ function verifyToken(req, res) {
   
     const token = authHeader.split(' ')[1]; // ✅ tách lấy phần token
     return new Promise((resolve, reject) => {
-      jwt.verify(token, process.env.JWT_SECRET || 'B2203510_CT449_HKI2024-2025', (error, user) => {
+      jwt.verify(token, process.env.JWT_SECRET || 'NHUTB2203520', (error, user) => {
         if (error || !user.ChucVu) {
           return reject('Unauthorized !');
         }

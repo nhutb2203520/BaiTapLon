@@ -3,7 +3,6 @@ const router =  express.Router()
 
 const bookController = require('../controllers/Sach.controller')
 
-
 router
     .get('/', bookController.getAll)
     .post('/add', bookController.add)

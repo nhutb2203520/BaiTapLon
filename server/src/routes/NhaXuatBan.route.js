@@ -1,7 +1,7 @@
 const express = require("express")
 const router =  express.Router()
 
-const publisherController = require('../controllers/NhaXuatBan.controller')
+const publisherController = require("../controllers/NhaXuatBan.controller")
 
 
 router

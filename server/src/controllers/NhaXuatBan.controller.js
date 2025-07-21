@@ -18,7 +18,7 @@ function verifyToken(req, res) {
     console.log("📦 Payload (decode):", decoded);
 
     return new Promise((resolve, reject) => {
-        jwt.verify(token, process.env.JWT_SECRET || 'B2203510_CT449_HKI2024-2025', (error, user) => {
+        jwt.verify(token, process.env.JWT_SECRET || 'NHUTB2203520', (error, user) => {
             if (error || !user) {
                 console.log("❌ Token verify thất bại:", error?.message);
                 return reject('Unauthorized !');

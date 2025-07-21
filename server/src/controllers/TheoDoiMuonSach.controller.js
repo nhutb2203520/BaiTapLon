@@ -6,7 +6,7 @@ const ApiError = require('../ApiError')
 function verifyTokenForUser (req, res) {
     const token = req.headers['authorization']
     return new Promise((resolve, reject) => {
-        jwt.verify(token, process.env.JWT_SECRET || 'B2203510_CT449_HKI2024-2025', (error, user) => {
+        jwt.verify(token, process.env.JWT_SECRET || 'NHUTB2203520', (error, user) => {
             if( error ) {  //Khong quan tam den user.ChucVu
                 return reject('Unauthorized !')
             }
@@ -21,7 +21,7 @@ function verifyTokenForUser (req, res) {
 function verifyTokenForAdmin (req, res) {
     const token = req.headers['authorization']
     return new Promise((resolve, reject) => {
-        jwt.verify(token, process.env.JWT_SECRET || 'B2203510_CT449_HKI2024-2025', (error, user) => {
+        jwt.verify(token, process.env.JWT_SECRET || 'NHUTB2203520', (error, user) => {
             if( error || !user.ChucVu ) { 
                 return reject('Unauthorized !')
             }
