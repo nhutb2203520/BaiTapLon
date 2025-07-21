@@ -1,6 +1,6 @@
 const publisherService = require('../services/publisher.service')
 const jwt = require('jsonwebtoken')
-const ApiError = require('../api-error')
+const ApiError = require('../ApiError')
 function verifyToken (req, res) {
     const token = req.headers['authorization']
     return new Promise((resolve, reject) => {
