@@ -104,10 +104,10 @@ export default {
 }
 
 .nav-container {
-  max-width: 1200px; 
+  
   width: 100%;
   margin: 10px auto;
-  margin-left: 40px;
+  margin-left: 1%;
   background: white;
   border-radius: 12px;
   padding: 8px 16px;
