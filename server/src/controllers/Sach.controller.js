@@ -33,6 +33,9 @@ module.exports.getAll = async (req, res, next) =>{
         )
     }
 }
+// [GET] [/book/hot]
+
+
 
 // [POST] [/book/add]
 module.exports.add =  async (req, res, next) =>{

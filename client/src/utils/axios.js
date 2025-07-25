@@ -1,52 +1,38 @@
+// src/utils/axios.js
 import axios from "axios";
-import { useAuthStore } from "@/Store/auth.store";
 
+// Tạo instance
 const instance = axios.create({
-  baseURL: "http://localhost:3000",
-  timeout: 10000,
+  baseURL: "http://localhost:3000/", // thay đổi nếu backend bạn dùng cổng khác
+  timeout: 5000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-//Intercept request để thêm Authorization
-instance.interceptors.request.use((config) => {
-  const auth = useAuthStore();
-  if (auth.accessToken) {
-    config.headers.Authorization = `Bearer ${auth.accessToken}`;
-  }
-  return config;
-});
-
-//Intercept response để tự refresh nếu token hết hạn
-instance.interceptors.response.use(
-  (res) => res,
-  async (err) => {
-    const auth = useAuthStore();
-    const originalRequest = err.config;
-
-    const isTokenExpired =
-      err.response?.status === 401 || err.response?.status === 403;
-
-    if (isTokenExpired && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        // Gọi refresh token
-        const newToken = await auth.refreshAccessToken();
-
-        //gán token mới vào header của request bị fail  
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-        // Gửi lại request cũ với token mới
-        return instance(originalRequest);
-      } catch (refreshErr) {
-        //Nếu refresh token cũng hết hạn → logout
-        auth.logout();
-        return Promise.reject(refreshErr);
-      }
+// Gắn token nếu có
+instance.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-    return Promise.reject(err);
+// Xử lý lỗi phản hồi
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn("⚠️ Unauthorized - Token hết hạn hoặc không hợp lệ");
+      // Có thể redirect về login nếu muốn:
+      // window.location.href = "/login";
+    }
+    return Promise.reject(error);
   }
 );
 
 export default instance;
-/*
-*/

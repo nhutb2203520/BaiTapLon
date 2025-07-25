@@ -35,7 +35,7 @@
 
 <script>
 import BookCard from '@/components/BookCard.vue';
-import { useBookStore } from '@/Store/Book.store';
+import { useBookStore } from '@/Store/Sach.store';
 
 export default {
   name: 'HotBook',

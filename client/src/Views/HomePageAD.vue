@@ -1,53 +1,24 @@
 <template>
   <div class="home-page">
     <!-- Header Component -->
-    <NavBarAD
-      :active-tab="currentTab" 
-      @tab-changed="handleTabChange"
-    />
+    <NavBarAD />
 
     <!-- Content Area -->
     <div class="content">
-      <!-- Page Header -->
       <div class="page-header">
         <h1 class="page-title">{{ pageData[currentTab].title }}</h1>
         <p class="page-subtitle">{{ pageData[currentTab].subtitle }}</p>
       </div>
 
-      <!-- Stats Grid (only show on home page) -->
-      <div v-if="currentTab === 'home'" class="stats-grid">
-        <div 
-          v-for="stat in stats" 
-          :key="stat.label"
-          class="stat-card"
-          @mouseenter="handleCardHover($event, true)"
-          @mouseleave="handleCardHover($event, false)"
-        >
-          <h3>{{ stat.value.toLocaleString() }}</h3>
-          <p>{{ stat.label }}</p>
-        </div>
+      <!-- Quản lý chính - Hiển thị các nút -->
+      <div v-if="currentTab === 'home'" class="management-buttons">
+        <button @click="goToRoute('publisher')">Quản lý nhà xuất bản</button>
+        <button @click="handleTabChange('books')">Quản lý sách</button>
+        <button @click="handleTabChange('borrow')">Quản lý mượn/trả sách</button>
+        <button @click="handleTabChange('readers')">Quản lý độc giả</button>
       </div>
 
-      <!-- Recent Activity (only show on home page) -->
-      <div v-if="currentTab === 'home'" class="recent-activity">
-        <h2>Hoạt động gần đây</h2>
-        
-        <div 
-          v-for="activity in recentActivities" 
-          :key="activity.id"
-          class="activity-item"
-        >
-          <div class="activity-icon">
-            <i :class="activity.icon"></i>
-          </div>
-          <div class="activity-text">
-            <h4>{{ activity.title }}</h4>
-            <p>{{ activity.description }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Placeholder content for other pages -->
+      <!-- Placeholder cho các tab quản lý -->
       <div v-else class="placeholder-content">
         <div class="placeholder-card">
           <i :class="getPageIcon(currentTab)"></i>
@@ -60,144 +31,85 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router' // 👉 dùng Vue Router
 import NavBarAD from '../components/Admin/NavBarAD.vue'
 
 export default {
   name: 'HomePageAD',
-  components: {
-    NavBarAD
-  },
+  components: { NavBarAD },
   setup() {
+    const router = useRouter() // 👉 khởi tạo router
     const currentTab = ref('home')
-    
+
     const pageData = reactive({
       home: {
-        title: "Quản Lý Thư Viện Thủ Thư",
-        subtitle: "Chào mừng bạn đến với hệ thống quản lý thư viện"
-      },
-      books: {
-        title: "Danh mục sách",
-        subtitle: "Khám phá kho sách phong phú của thư viện"
-      },
-      approval: {
-        approval: "Sách chờ duyệt",
-        subtitle: "Quản lý sách đang chờ duyệt của độc giả"
+        title: 'Trang Quản Lý Thư Viện',
+        subtitle: 'Chọn chức năng để bắt đầu'
       },
       publisher: {
-        publisher: "Nhà xuất bản",
-        subtitle: "Quản lý nhà xuất bản"
+        title: 'Quản lý nhà xuất bản',
+        subtitle: 'Thêm, sửa, xoá thông tin nhà xuất bản'
       },
-      history: {
-        title: "Lịch sử mượn sách",
-        subtitle: "Theo dõi các giao dịch mượn trả sách của bạn"
+      books: {
+        title: 'Quản lý sách',
+        subtitle: 'Thêm, cập nhật và xoá sách'
       },
-      account: {
-        title: "Tài khoản",
-        subtitle: "Quản lý thông tin cá nhân và cài đặt tài khoản"
+      borrow: {
+        title: 'Quản lý mượn/trả sách',
+        subtitle: 'Xử lý các giao dịch mượn và trả'
+      },
+      readers: {
+        title: 'Quản lý độc giả',
+        subtitle: 'Quản lý thông tin người dùng'
       }
     })
-
-    const stats = reactive([
-      { label: 'Tổng số sách', value: 1234 },
-      {label: 'Tổng nhà xuất bản', value: 68},
-      {label: 'Sách chờ duyệt mượn,', value: 111},
-      { label: 'Sách đang mượn', value: 89 },
-      { label: 'Thành viên', value: 567 },
-      { label: 'Sách quá hạn', value: 23 }
-    ])
-
-    const recentActivities = reactive([
-      {
-        id: 1,
-        icon: 'fas fa-book',
-        title: 'Sách "Lập trình Python" được mượn',
-        description: 'Nguyễn Văn A - 2 giờ trước'
-      },
-      {
-        id: 2,
-        icon: 'fas fa-undo',
-        title: 'Sách "JavaScript căn bản" được trả',
-        description: 'Trần Thị B - 3 giờ trước'
-      },
-      {
-        id: 3,
-        icon: 'fas fa-user-plus',
-        title: 'Thành viên mới đăng ký',
-        description: 'Lê Văn C - 5 giờ trước'
-      },
-      {
-        id: 4,
-        icon: 'fas fa-clock',
-        title: 'Gia hạn sách "React Native"',
-        description: 'Phạm Thị D - 1 ngày trước'
-      }
-    ])
 
     const handleTabChange = (tab) => {
       currentTab.value = tab
     }
 
-    const handleCardHover = (event, isHover) => {
-      const card = event.target.closest('.stat-card')
-      if (isHover) {
-        card.style.transform = 'translateY(-2px)'
-        card.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.12)'
+    const goToRoute = (tab) => {
+      if (tab === 'publisher') {
+        router.push('/admin/quan-ly-nxb') // 👉 điều hướng đến route cụ thể
       } else {
-        card.style.transform = 'translateY(0)'
-        card.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.08)'
+        handleTabChange(tab)
       }
     }
 
-    const getPageIcon = (page) => {
+    const getPageIcon = (tab) => {
       const icons = {
-        books: 'fas fa-layer-group',
-        history: 'fas fa-history',
-        account: 'fas fa-user'
+        publisher: 'fas fa-building',
+        books: 'fas fa-book',
+        borrow: 'fas fa-book-reader',
+        readers: 'fas fa-users'
       }
-      return icons[page] || 'fas fa-home'
+      return icons[tab] || 'fas fa-cogs'
     }
-
-    onMounted(() => {
-      // Add transition styles for stat cards
-      const statCards = document.querySelectorAll('.stat-card')
-      statCards.forEach(card => {
-        card.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease'
-      })
-    })
 
     return {
       currentTab,
       pageData,
-      stats,
-      recentActivities,
       handleTabChange,
-      handleCardHover,
-      getPageIcon
+      getPageIcon,
+      goToRoute
     }
   }
 }
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .home-page {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f8fafc;
   min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .content {
-  margin-top: 60px;
   padding: 40px 24px;
-  max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 1000px;
+  margin: auto;
+  margin-top: 60px;
 }
 
 .page-header {
@@ -205,125 +117,49 @@ export default {
   border-radius: 12px;
   padding: 32px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
   text-align: center;
-}
-
-.page-title {
-  color: #1e293b;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  transition: opacity 0.3s ease;
-}
-
-.page-subtitle {
-  color: #64748b;
-  font-size: 16px;
-  transition: opacity 0.3s ease;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Chia đều 3 cột */
-  gap: 24px;
   margin-bottom: 32px;
 }
 
-
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border-left: 4px solid #4f46e5;
-  cursor: pointer;
-  min-height: 120px; /* hoặc 100-140px tùy ý */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-
-.stat-card h3 {
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
   color: #1e293b;
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
-.stat-card p {
-  color: #64748b;
-  font-size: 24px;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
-  height: 2.8em;
-}
-
-
-.recent-activity {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.recent-activity h2 {
-  color: #1e293b;
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.activity-item:last-child {
-  border-bottom: none;
-}
-
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #4f46e5;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.page-subtitle {
   font-size: 16px;
-}
-
-.activity-text {
-  flex: 1;
-}
-
-.activity-text h4 {
-  color: #1e293b;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.activity-text p {
   color: #64748b;
-  font-size: 12px;
+}
+
+.management-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.management-buttons button {
+  padding: 20px;
+  background-color: #888893bc;
+  color: rgb(5, 4, 4);
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.management-buttons button:hover {
+  background-color: #4338ca;
+  color: rgb(240, 231, 231);
 }
 
 .placeholder-content {
   background: white;
   border-radius: 12px;
-  padding: 64px 32px;
+  padding: 60px 32px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   text-align: center;
 }
@@ -335,39 +171,19 @@ export default {
 }
 
 .placeholder-card h3 {
-  color: #1e293b;
   font-size: 24px;
   font-weight: 600;
+  color: #1e293b;
   margin-bottom: 8px;
 }
 
 .placeholder-card p {
-  color: #64748b;
   font-size: 16px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .content {
-    padding: 24px 16px;
-  }
-  
-  .page-header {
-    padding: 24px;
-  }
-  
-  .page-title {
-    font-size: 24px;
-  }
-  
-  .page-subtitle {
-    font-size: 14px;
-  }
+  color: #64748b;
 }
 </style>
 
+<!-- Font Awesome -->
 <style>
-/* Global styles for Font Awesome */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 </style>

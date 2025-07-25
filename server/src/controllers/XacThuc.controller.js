@@ -32,17 +32,19 @@ module.exports.signIn =  async (req, res, next) =>{
 }
 
 //POST [authen/staffsignin]
-module.exports.staffSignIn = async (req, res , next) =>{
-    try {
-        const data = req.body
-        const staff = new staffService()
-        const signInResult = await staff.signIn(data)
-        res.status(200).json(signInResult);
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while Signing in !!!"));
-    }
-}
+module.exports.staffSignIn = async (req, res , next) => {
+  try {
+    console.log("📥 Body nhận được:", req.body); // 👈 thêm dòng này
+    const data = req.body;
+    const staff = new staffService();
+    const signInResult = await staff.signIn(data);
+    res.status(200).json(signInResult);
+  } catch (error) {
+    console.log(error);
+    return next(new ApiError(500, "An error occurred while Signing in !!!"));
+  }
+};
+
 
 //POST [authen/staffsignup]
 module.exports.staffSignUp = async (req, res, next) =>{

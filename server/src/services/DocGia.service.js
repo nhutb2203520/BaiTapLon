@@ -4,28 +4,39 @@ const jwt = require("jsonwebtoken");
 
 module.exports = class userService {
    async signUp(data) {
-    const userTest = await userModel.exists({ SoDienThoai: data.SoDienThoai });
-    if (!userTest) {
-      const newUser = new userModel({
-        HoLot: data.HoLot,
-        Ten: data.Ten,
-        NgaySinh: data.NgaySinh,
-        SoDienThoai: data.SoDienThoai,
-        GioiTinh: data.GioiTinh,
-        DiaChi: data.DiaChi,
-        MatKhau: bcrypt.hashSync(data.MatKhau, 10), //salt rounds: 10
-      });
+  const userTest = await userModel.exists({ SoDienThoai: data.SoDienThoai });
 
-      try {
-        await newUser.save();
-        return { message: "Đăng ký thành công! Hãy đăng nhập vào tài khoản của bạn" };
-      } catch (error) {
-        return { message: error };
-      }
-    } else {
-        return { message: 'Số điện thoại đã tồn tại !' };
+  if (!userTest) {
+    // Chuyển "30/11/2003" => Date object
+    const parsedDate = this.parseDate(data.NgaySinh); // <- xử lý tại đây
+
+    const newUser = new userModel({
+      HoLot: data.HoLot,
+      Ten: data.Ten,
+      NgaySinh: parsedDate,
+      SoDienThoai: data.SoDienThoai,
+      GioiTinh: data.GioiTinh,
+      DiaChi: data.DiaChi,
+      MatKhau: bcrypt.hashSync(data.MatKhau, 10),
+    });
+
+    try {
+      await newUser.save();
+      return { message: "Đăng ký thành công! Hãy đăng nhập vào tài khoản của bạn" };
+    } catch (error) {
+      return { message: error.message || "Lỗi hệ thống khi đăng ký" };
     }
+  } else {
+    return { message: 'Số điện thoại đã tồn tại!' };
   }
+}
+
+// Hàm xử lý định dạng ngày DD/MM/YYYY
+parseDate(dateString) {
+  const [day, month, year] = dateString.split('/');
+  return new Date(`${year}-${month}-${day}`);
+}
+
 
    async signIn(user) {
     
@@ -50,7 +61,7 @@ module.exports = class userService {
         const { MatKhau, ...userInfor } = userCheck._doc
 
         //jwt.sign(payload, secretOrPrivateKey, [options])
-        const token = jwt.sign(userInfor, process.env.JWT_SECRET || 'B2203510_CT449_HKI2024-2025', { expiresIn:'1h'})
+        const token = jwt.sign(userInfor, process.env.JWT_SECRET || 'NHUTB2203520', { expiresIn:'1h'})
 
         return {
           data:{ user: userInfor, token},

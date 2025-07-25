@@ -14,7 +14,7 @@ const bookSchema = new mongoose.Schema(
     SoLuongDaMuon: { type: Number, required: true, default: 0 },
     //them thuoc tinh SoLuongDaMuon
   },
-  { timestamps: true, minimize: false, collection: 'Books' }
+  { timestamps: true, minimize: false, collection: 'Sach' }
 );
 
 bookSchema.plugin(AutoIncrement, { inc_field: "MaSach", start_seq: 1000 });

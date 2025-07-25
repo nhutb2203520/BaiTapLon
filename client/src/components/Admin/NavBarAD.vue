@@ -6,7 +6,7 @@
         <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
       </div>
 
-      <!-- Center: Menu -->
+      <!-- Center: Menu điều hướng -->
       <ul class="nav-menu">
         <li>
           <a
@@ -30,7 +30,7 @@
         </li>
       </ul>
 
-      <!-- Right: Trống (dự phòng) -->
+      <!-- Right: Để trống (dự phòng cho tương lai) -->
       <div class="navbar-right"></div>
     </div>
   </nav>
@@ -40,6 +40,7 @@
 export default {
   name: 'LibraryHeader',
   props: {
+    // Tab đang được chọn (active)
     activeTab: {
       type: String,
       default: 'home'
@@ -49,44 +50,46 @@ export default {
 </script>
 
 <style scoped>
+/* Tổng thể thanh navbar */
 .navbar {
-  background: #4f46e5;
-  padding: 12px 0;
+  background: #4f46e5;         /* Màu nền xanh */
+  padding: 12px 0;             /* Khoảng cách trên dưới */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 1000;               /* Ưu tiên hiển thị trên cùng */
 }
 
+/* Chứa toàn bộ nội dung navbar */
 .navbar-content {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* Chia 3 phần: trái - giữa - phải */
   align-items: center;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 0 10px;
 }
 
+/* Logo bên trái */
 .navbar-left {
-  flex: 1;
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
 }
 
+/* Ảnh logo */
 .nav-logo {
   height: 56px;
   width: auto;
   border-radius: 10px;
   background: white;
   padding: 2px;
-  margin-left: 0px; 
+  margin-left: 13px; /* ✅ Cách mép trái 13px */
 }
 
+/* Menu chính giữa */
 .nav-menu {
-  flex: 1;
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   list-style: none;
   gap: 60px;
   padding: 10px;
@@ -94,10 +97,13 @@ export default {
   align-items: center;
 }
 
+/* Phần bên phải để trống (cho tương lai) */
 .navbar-right {
-  flex: 1;
+  display: flex;
+  justify-content: flex-end;
 }
 
+/* Style cho từng liên kết */
 .nav-menu li a {
   color: #f1f5f9;
   text-decoration: none;
@@ -111,16 +117,20 @@ export default {
   transition: 0.2s;
 }
 
+/* Hover khi rê chuột vào */
 .nav-menu li a:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Khi tab đang active */
 .nav-menu li a.active {
   background-color: white;
   color: #4f46e5;
 }
 
+/* Icon trong menu */
 .nav-menu li a i {
   font-size: 16px;
 }
+
 </style>

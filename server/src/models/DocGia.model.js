@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
     MatKhau: { type: String, required: true },
     //them vao thuoc tinh MatKhau
   },
-  { collection: 'users' }
+  { collection: 'DocGia' }
 );
 
 module.exports = mongoose.model?.userSchema || mongoose.model("userSchema", userSchema);

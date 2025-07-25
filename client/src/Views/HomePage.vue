@@ -30,24 +30,8 @@
         </div>
       </section>
 
-      <!-- Featured Books -->
-      <section class="container">
-        <div class="section">
-          <h2 class="section-title">
-            <i class="fas fa-star"></i> Sách nổi bật
-          </h2>
-          <div class="books-grid">
-            <BookCard
-              v-for="book in featuredBooks"
-              :key="book.id"
-              :book="book"
-              @borrow="borrowBook"
-              @view="viewDetails"
-            />
-          </div>
-        </div>
-      </section>
-
+      <!-- Sách nổi bật -->
+      <SachNoiBat />
       <!-- Recent Books -->
       <section class="container">
         <div class="section">
@@ -72,55 +56,46 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import NavBar from '@/components/Client/NavBar.vue'
 import Footer from '@/components/Client/Footer.vue'
 import BookCard from '@/components/BookCard.vue'
+import SachNoiBat from '../components/Client/SachNoiBat.vue'
+import { useBookStore } from '@/Store/Sach.store'
 
-export default {
-  name: 'HomePage',
-  components: {
-    NavBar,
-    Footer,
-    BookCard
-  },
-  data() {
-    return {
-      stats: {
-        totalBooks: 28547,
-        availableBooks: 23850,
-        totalMembers: 15240
-      },
-      featuredBooks: [
-        { id: 1, title: 'Lập trình JS', author: 'Nguyễn Văn A', status: 'available', category: 'technology' },
-        { id: 2, title: 'Quản trị hiện đại', author: 'Trần Thị B', status: 'borrowed', category: 'business' },
-        { id: 3, title: 'Lịch sử thế giới', author: 'Lê Văn C', status: 'available', category: 'history' }
-      ],
-      recentBooks: [
-        { id: 4, title: 'Blockchain', author: 'Đặng Hùng', status: 'available', category: 'technology' },
-        { id: 5, title: 'Triết học Đông phương', author: 'Bùi Thị Nga', status: 'available', category: 'philosophy' }
-      ]
-    }
-  },
-  methods: {
-    getStatLabel(key) {
-      return {
-        totalBooks: 'Đầu sách',
-        availableBooks: 'Sách có sẵn',
-        totalMembers: 'Thành viên'
-      }[key] || ''
-    },
-    borrowBook(book) {
-      if (book.status === 'available') {
-        alert(`Yêu cầu mượn sách: ${book.title}`)
-      }
-    },
-    viewDetails(book) {
-      alert(`Chi tiết sách:\nTiêu đề: ${book.title}\nTác giả: ${book.author}`)
-    }
+
+const bookStore = useBookStore()
+
+const stats = {
+  totalBooks: 28547,
+  availableBooks: 23850,
+  totalMembers: 15240
+}
+
+const recentBooks = [
+  { id: 4, title: 'Blockchain', author: 'Đặng Hùng', status: 'available', category: 'technology' },
+  { id: 5, title: 'Triết học Đông phương', author: 'Bùi Thị Nga', status: 'available', category: 'philosophy' }
+]
+
+const getStatLabel = (key) => {
+  return {
+    totalBooks: 'Đầu sách',
+    availableBooks: 'Sách có sẵn',
+    totalMembers: 'Thành viên'
+  }[key] || ''
+}
+
+const borrowBook = (book) => {
+  if (book.status === 'available') {
+    alert(`Yêu cầu mượn sách: ${book.title}`)
   }
 }
+
+const viewDetails = (book) => {
+  alert(`Chi tiết sách:\nTiêu đề: ${book.title}\nTác giả: ${book.author}`)
+}
 </script>
+
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
@@ -129,7 +104,7 @@ export default {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
-  padding: 2rem 0;
+  padding: 100px
 }
 
 .container {
