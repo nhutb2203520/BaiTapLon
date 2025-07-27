@@ -4,6 +4,7 @@ import HomePage from '../Views/HomePage.vue'
 import QuanLyNXB from '../Views/QuanLyNXB.vue'
 import ThuThuDangNhap from '../components/Admin/ThuThuDangNhap.vue'
 import DocGiaDangNhap from '../components/Client/DocGiaDangNhap.vue'
+import QuanLySach from '../Views/QuanLySach.vue'
 
 const routes = [
   { path: '/',
@@ -29,6 +30,11 @@ const routes = [
     path: '/admin/quan-ly-nxb',
     name: 'QuanLyNXB',
     component: QuanLyNXB
+  },
+  {
+    path: '/admin/quan-ly-sach',
+    name: 'QuanLySach', 
+    component: QuanLySach
   }
 ]
 

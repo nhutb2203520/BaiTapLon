@@ -2,6 +2,7 @@
   <div class="container py-4">
     <NavBarAD />
     <SideBarAD />
+
     <!-- Tiêu đề -->
     <div class="mb-4">
       <h2 class="fw-bold d-flex align-items-center">
@@ -21,15 +22,34 @@
           </div>
         </div>
         <div class="d-flex gap-2 flex-column flex-md-row w-100 w-md-auto">
-          <!-- Tìm kiếm theo tên, địa chỉ hoặc email -->
           <input
             type="text"
             class="form-control"
             placeholder="Tìm kiếm theo tên, địa chỉ hoặc email..."
             v-model="searchText"
           />
-          <button class="btn btn-primary">
+          <button class="btn btn-primary" @click="showForm = !showForm">
             <i class="bi bi-plus-lg me-1"></i> Thêm nhà xuất bản
+          </button>
+        </div>
+      </div>
+
+      <!-- Form thêm nhà xuất bản -->
+      <div v-if="showForm" class="mt-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input v-model="newNXB.TenNXB" type="text" class="form-control" placeholder="Tên nhà xuất bản" />
+          </div>
+          <div class="col-md-6">
+            <input v-model="newNXB.DiaChi" type="text" class="form-control" placeholder="Địa chỉ" />
+          </div>
+        </div>
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn btn-success" @click="addNXB">
+            <i class="bi bi-check-circle me-1"></i> Lưu
+          </button>
+          <button class="btn btn-secondary" @click="cancelAdd">
+            <i class="bi bi-x-circle me-1"></i> Huỷ
           </button>
         </div>
       </div>
@@ -49,7 +69,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Lặp qua danh sách NXB đã lọc -->
             <tr
               v-for="(nxb, index) in filteredNXBs"
               :key="index"
@@ -90,8 +109,6 @@
                 </div>
               </td>
             </tr>
-
-            <!-- Trường hợp không có NXB -->
             <tr v-if="filteredNXBs.length === 0">
               <td colspan="4" class="text-center text-muted py-4">Không tìm thấy nhà xuất bản nào.</td>
             </tr>
@@ -108,18 +125,23 @@ import { useNhaXuatBanStore } from '@/Store/NhaXuatBan.store'
 
 import NavBarAD from '../components/Admin/NavBarAD.vue'
 import SideBarAD from '../components/Admin/SideBarAD.vue'
-// Khởi tạo store
+
+// Store
 const publisherStore = useNhaXuatBanStore()
-
-// Tạo biến tìm kiếm liên kết với input
 const searchText = ref('')
+const showForm = ref(false)
 
-// Khi component được mounted thì gọi API lấy danh sách nhà xuất bản
+// Thông tin NXB mới
+const newNXB = ref({
+  TenNXB: '',
+  DiaChi: ''
+})
+
 onMounted(async () => {
   await publisherStore.fetchAll()
 })
 
-// computed trả về danh sách nhà xuất bản theo từ khóa tìm kiếm
+// Bộ lọc tìm kiếm
 const filteredNXBs = computed(() => {
   return Array.isArray(publisherStore.listNXB)
     ? publisherStore.listNXB.filter((nxb) =>
@@ -130,12 +152,36 @@ const filteredNXBs = computed(() => {
       )
     : []
 })
+
+// Thêm NXB
+const addNXB = async () => {
+  if (!newNXB.value.TenNXB || !newNXB.value.DiaChi) {
+    alert('Vui lòng nhập đầy đủ thông tin!');
+    return;
+  }
+
+  try {
+    await publisherStore.addNXB(newNXB.value); // Hàm addNXB phải có trong store
+    await publisherStore.fetchAll(); // Refresh danh sách
+    newNXB.value = { TenNXB: '', DiaChi: '' };
+    showForm.value = false;
+  } catch (error) {
+    console.error('Lỗi khi thêm NXB:', error);
+    alert('Thêm nhà xuất bản thất bại!');
+  }
+};
+
+const cancelAdd = () => {
+  newNXB.value = { TenNXB: '', DiaChi: '' }
+  showForm.value = false
+}
 </script>
 
 <style scoped>
 .container.py-4 {
   margin-top: 8%;
 }
+
 .nxb-row:hover {
   background-color: #f8f9fa;
   transition: background-color 0.25s ease;
