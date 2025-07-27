@@ -1,5 +1,7 @@
 <template>
   <div class="container py-4">
+    <NavBarAD />
+    <SideBarAD />
     <!-- Tiêu đề -->
     <div class="mb-4">
       <h2 class="fw-bold d-flex align-items-center">
@@ -104,6 +106,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useNhaXuatBanStore } from '@/Store/NhaXuatBan.store'
 
+import NavBarAD from '../components/Admin/NavBarAD.vue'
+import SideBarAD from '../components/Admin/SideBarAD.vue'
 // Khởi tạo store
 const publisherStore = useNhaXuatBanStore()
 
@@ -129,6 +133,9 @@ const filteredNXBs = computed(() => {
 </script>
 
 <style scoped>
+.container.py-4 {
+  margin-top: 8%;
+}
 .nxb-row:hover {
   background-color: #f8f9fa;
   transition: background-color 0.25s ease;

@@ -1,9 +1,9 @@
 <template>
   <nav class="navbar">
-    <!-- Ảnh logo nằm ngoài ô trắng -->
+    <!-- Logo -->
     <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
 
-    <!-- Menu điều hướng bên trong ô trắng -->
+    <!-- Menu chính -->
     <div class="nav-container">
       <ul class="nav-menu">
         <li class="nav-item">
@@ -39,25 +39,36 @@
             <span>Lịch sử mượn</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a 
-            href="#" 
-            class="nav-link" 
-            :class="{ active: activeTab === 'account' }"
-            @click="changeTab('account')"
-          >
+
+        <!-- Dropdown tài khoản -->
+        <li class="nav-item" @click.stop="toggleDropdown">
+          <div class="nav-link" :class="{ active: activeTab === 'account' }">
             <i class="fas fa-user"></i>
             <span>Tài khoản</span>
-          </a>
+          </div>
+
+          <!-- Dropdown menu -->
+          <div v-if="showDropdown" class="account-dropdown">
+            <template v-if="isLoggedIn">
+              <p class="mb-2">Xin chào, <strong>{{ username }}</strong></p>
+              <a href="#" class="dropdown-item" @click="logout">Đăng xuất</a>
+              
+            </template>
+            <template v-else>
+              <router-link to="/reader/login">Đăng nhập</router-link>
+              <a href="#" class="dropdown-item" @click="changeTab('signup')">Đăng ký</a>
+            </template>
+          </div>
         </li>
       </ul>
     </div>
   </nav>
 </template>
 
-
 <script>
-import { ref, defineEmits } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useAuthStore } from '@/Store/auth.store'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'LibraryHeader',
@@ -69,18 +80,81 @@ export default {
   },
   emits: ['tab-changed'],
   setup(props, { emit }) {
+    const authStore = useAuthStore()
+
     const changeTab = (tab) => {
       emit('tab-changed', tab)
+      showDropdown.value = false
     }
 
+    const showDropdown = ref(false)
+    const toggleDropdown = () => {
+      showDropdown.value = !showDropdown.value
+    }
+
+    const closeDropdown = () => {
+      showDropdown.value = false
+    }
+
+    const isLoggedIn = computed(() => !!authStore.accessToken)
+    const username = computed(() => authStore.username || 'Người dùng')
+
+    const logout = () => {
+      authStore.logout()
+      ElMessage.success('Đăng xuất thành công!')
+      changeTab('home')
+    }
+
+    onMounted(() => {
+      window.addEventListener('click', closeDropdown)
+    })
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('click', closeDropdown)
+    })
+
     return {
-      changeTab
+      changeTab,
+      showDropdown,
+      toggleDropdown,
+      isLoggedIn,
+      username,
+      logout
     }
   }
 }
 </script>
 
 <style scoped>
+/* ... giữ nguyên style của bạn phía trên ... */
+
+.account-dropdown {
+  position: absolute;
+  top: 100%;
+  background: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+}
+
+.dropdown-item {
+  color: #6e1010;
+  padding: 6px 0;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  color: #4f46e5;
+}
+
+.nav-item {
+  position: relative; /* để chứa dropdown */
+}
 .navbar {
   background: #302bb7;
   padding: 12px 24px;
@@ -135,7 +209,7 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  color: #64748b;
+  color: #0e64dc;
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;

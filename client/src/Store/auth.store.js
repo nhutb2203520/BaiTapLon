@@ -47,13 +47,6 @@ export const useAuthStore = defineStore("auth", {
     return false;
   }
 },
-
-
-
-
-
-
-
     logout() {
       this.accessToken = "";
       this.refreshToken = "";

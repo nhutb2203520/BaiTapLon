@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePageAD from '../Views/HomePageAD.vue'
 import HomePage from '../Views/HomePage.vue'
 import QuanLyNXB from '../Views/QuanLyNXB.vue'
-import LoginAdmin from '../components/Admin/LoginAdmin.vue'
+import ThuThuDangNhap from '../components/Admin/ThuThuDangNhap.vue'
+import DocGiaDangNhap from '../components/Client/DocGiaDangNhap.vue'
 
 const routes = [
   { path: '/',
@@ -16,8 +17,13 @@ const routes = [
   },
   {
     path: '/admin/login',
-    name: 'AdminLogin',
-    component: LoginAdmin
+    name: 'ThuThuDangNhap',
+    component: ThuThuDangNhap
+  },
+  {
+    path: '/reader/login',
+    name: 'DocGiaDangNhap',
+    component: DocGiaDangNhap
   },
   {
     path: '/admin/quan-ly-nxb',
