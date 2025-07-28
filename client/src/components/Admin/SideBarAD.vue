@@ -65,9 +65,9 @@ const isActive = (path) => {
 
 const menuItems = [
   { label: 'Quản lý nhà xuất bản', icon: 'bi bi-building', route: '/admin/quan-ly-nxb' },
-  { label: 'Quản lý sách', icon: 'bi bi-book', route: '/admin/books' },
-  { label: 'Quản lý mượn trả', icon: 'bi bi-arrow-left-right', route: '/admin/borrow-return' },
-  { label: 'Quản lý độc giả', icon: 'bi bi-people', route: '/admin/readers' }
+  { label: 'Quản lý sách', icon: 'bi bi-book', route: '/admin/quan-ly-sach' },
+  { label: 'Quản lý mượn trả', icon: 'bi bi-arrow-left-right', route: '/admin/quan-ly-muon-sach' },
+  { label: 'Quản lý độc giả', icon: 'bi bi-people', route: '/admin/quan-ly-doc-gia' }
 ];
 </script>
 

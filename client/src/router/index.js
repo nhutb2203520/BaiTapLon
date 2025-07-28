@@ -5,7 +5,9 @@ import QuanLyNXB from '../Views/QuanLyNXB.vue'
 import ThuThuDangNhap from '../components/Admin/ThuThuDangNhap.vue'
 import DocGiaDangNhap from '../components/Client/DocGiaDangNhap.vue'
 import QuanLySach from '../Views/QuanLySach.vue'
-
+import { pa } from 'element-plus/es/locales.mjs'  
+import TaiKhoanDocGia from '../components/Client/TaiKhoanDocGia.vue'
+import TaiKhoanThuThu from '../components/Admin/TaiKhoanThuThu.vue'
 const routes = [
   { path: '/',
     name: HomePage,
@@ -35,6 +37,16 @@ const routes = [
     path: '/admin/quan-ly-sach',
     name: 'QuanLySach', 
     component: QuanLySach
+  },
+  {
+    path: '/reader/account',
+    name: 'TaiKhoanDocGia',
+    component: TaiKhoanDocGia,
+  },
+  {
+    path: '/admin/account',
+    name: 'TaiKhoanThuThu',
+    component: TaiKhoanThuThu,
   }
 ]
 

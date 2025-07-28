@@ -1,39 +1,42 @@
 <template>
   <nav class="navbar">
     <!-- Logo -->
-    <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+     <router-link to="/">
+      <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+     </router-link>
+    
 
     <!-- Menu chính -->
     <div class="nav-container">
       <ul class="nav-menu">
         <li class="nav-item">
-          <a 
-            href="#" 
-            class="nav-link" 
+          <a
+            href="#"
+            class="nav-link"
             :class="{ active: activeTab === 'home' }"
-            @click="changeTab('home')"
+            @click.prevent="changeTab('home')"
           >
             <i class="fas fa-home"></i>
             <span>Trang chủ</span>
           </a>
         </li>
         <li class="nav-item">
-          <a 
-            href="#" 
-            class="nav-link" 
+          <a
+            href="#"
+            class="nav-link"
             :class="{ active: activeTab === 'books' }"
-            @click="changeTab('books')"
+            @click.prevent="changeTab('books')"
           >
             <i class="fas fa-layer-group"></i>
             <span>Danh mục sách</span>
           </a>
         </li>
         <li class="nav-item">
-          <a 
-            href="#" 
-            class="nav-link" 
+          <a
+            href="#"
+            class="nav-link"
             :class="{ active: activeTab === 'history' }"
-            @click="changeTab('history')"
+            @click.prevent="changeTab('history')"
           >
             <i class="fas fa-history"></i>
             <span>Lịch sử mượn</span>
@@ -47,15 +50,13 @@
             <span>Tài khoản</span>
           </div>
 
-          <!-- Dropdown menu -->
           <div v-if="showDropdown" class="account-dropdown">
             <template v-if="isLoggedIn">
-              <p class="mb-2">Xin chào, <strong>{{ username }}</strong></p>
+              <router-link class="dropdown-item" to="/reader/account">Tài khoản</router-link>
               <a href="#" class="dropdown-item" @click="logout">Đăng xuất</a>
-              
             </template>
             <template v-else>
-              <router-link to="/reader/login">Đăng nhập</router-link>
+              <router-link class="dropdown-item" to="/reader/login">Đăng nhập</router-link>
               <a href="#" class="dropdown-item" @click="changeTab('signup')">Đăng ký</a>
             </template>
           </div>
@@ -81,23 +82,24 @@ export default {
   emits: ['tab-changed'],
   setup(props, { emit }) {
     const authStore = useAuthStore()
+    const showDropdown = ref(false)
 
     const changeTab = (tab) => {
       emit('tab-changed', tab)
       showDropdown.value = false
     }
 
-    const showDropdown = ref(false)
     const toggleDropdown = () => {
       showDropdown.value = !showDropdown.value
     }
 
-    const closeDropdown = () => {
-      showDropdown.value = false
+    const closeDropdown = (event) => {
+      const path = event.composedPath?.() || event.path || []
+      const isInside = path.some(el => el?.classList?.contains?.('nav-item'))
+      if (!isInside) showDropdown.value = false
     }
 
     const isLoggedIn = computed(() => !!authStore.accessToken)
-    const username = computed(() => authStore.username || 'Người dùng')
 
     const logout = () => {
       authStore.logout()
@@ -105,20 +107,14 @@ export default {
       changeTab('home')
     }
 
-    onMounted(() => {
-      window.addEventListener('click', closeDropdown)
-    })
-
-    onBeforeUnmount(() => {
-      window.removeEventListener('click', closeDropdown)
-    })
+    onMounted(() => window.addEventListener('click', closeDropdown))
+    onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
 
     return {
       changeTab,
-      showDropdown,
       toggleDropdown,
+      showDropdown,
       isLoggedIn,
-      username,
       logout
     }
   }
@@ -126,41 +122,11 @@ export default {
 </script>
 
 <style scoped>
-/* ... giữ nguyên style của bạn phía trên ... */
-
-.account-dropdown {
-  position: absolute;
-  top: 100%;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  z-index: 999;
-}
-
-.dropdown-item {
-  color: #6e1010;
-  padding: 6px 0;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  color: #4f46e5;
-}
-
-.nav-item {
-  position: relative; /* để chứa dropdown */
-}
 .navbar {
   background: #302bb7;
   padding: 12px 24px;
-  display: flex; /* Cho ảnh và container cùng hàng */
+  display: flex;
   align-items: center;
-  gap: 16px;
   position: fixed;
   top: 0;
   left: 0;
@@ -170,23 +136,19 @@ export default {
 
 .nav-logo {
   height: 56px;
-  width: auto;
   border-radius: 10px;
   background: white;
   padding: 2px;
-  margin-left: 40px;
+  margin-left: 20px;
 }
 
 .nav-container {
-  
-  width: 100%;
-  margin: 10px auto;
-  margin-left: 1%;
+  flex: 1;
+  margin-left: 2%;
   background: white;
   border-radius: 12px;
   padding: 8px 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  flex: 1;
 }
 
 .nav-menu {
@@ -199,9 +161,10 @@ export default {
 }
 
 .nav-item {
-  flex: 1;
+  position: relative;
   display: flex;
   justify-content: center;
+  flex: 1;
 }
 
 .nav-link {
@@ -215,7 +178,6 @@ export default {
   font-size: 15px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  position: relative;
   justify-content: center;
   min-width: 120px;
 }
@@ -247,15 +209,39 @@ export default {
   opacity: 0.8;
 }
 
-.nav-link.active i {
-  opacity: 1;
+.account-dropdown {
+  position: absolute;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  min-width: 160px;
 }
 
-/* Responsive logo (tuỳ chọn) */
+.dropdown-item {
+  color: #374151;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+  color: #1d4ed8;
+}
+
 @media (max-width: 768px) {
   .nav-logo {
     height: 36px;
   }
 }
-
 </style>

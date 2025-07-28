@@ -1,12 +1,14 @@
 <template> 
   <nav class="navbar">
     <div class="navbar-content">
-      <!-- Left: Logo -->
+      <!-- Logo -->
       <div class="navbar-left">
-        <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+        <router-link to="/admin/home">
+          <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
+        </router-link>
       </div>
 
-      <!-- Center: Menu điều hướng -->
+      <!-- Menu -->
       <ul class="nav-menu">
         <li>
           <a
@@ -19,14 +21,16 @@
             <span>Trang Quản Lý</span>
           </a>
         </li>
+
         <li class="nav-item" @click.stop="toggleDropdown">
           <div class="nav-link" :class="{ active: activeTab === 'account' }">
             <i class="fas fa-user"></i>
             <span>Tài khoản</span>
           </div>
-          <div v-if="showDropdown" class="account-dropdown">
+
+          <div class="account-dropdown" v-if="showDropdown">
             <template v-if="isLoggedIn">
-             <router-link class="dropdown-item" to="/admin/account">Tài khoản</router-link>
+              <router-link class="dropdown-item" to="/admin/account">Tài khoản</router-link>
               <a href="#" class="dropdown-item" @click="logout">Đăng xuất</a>
             </template>
             <template v-else>
@@ -36,7 +40,7 @@
         </li>
       </ul>
 
-      <!-- Right: Dự phòng cho tương lai -->
+      <!-- Right (dự phòng) -->
       <div class="navbar-right"></div>
     </div>
   </nav>
@@ -58,13 +62,18 @@ export default {
   emits: ['tab-changed'],
   setup(props, { emit }) {
     const authStore = useAuthStore()
-
     const showDropdown = ref(false)
+
     const toggleDropdown = () => {
       showDropdown.value = !showDropdown.value
     }
-    const closeDropdown = () => {
-      showDropdown.value = false
+
+    const closeDropdown = (event) => {
+      const path = event.composedPath?.() || event.path || []
+      const isInside = path.some(el => el?.classList?.contains?.('nav-item'))
+      if (!isInside) {
+        showDropdown.value = false
+      }
     }
 
     const isLoggedIn = computed(() => !!authStore.accessToken)
@@ -94,42 +103,11 @@ export default {
 </script>
 
 <style scoped>
-.account-dropdown {
-  position: absolute;
-  top: 100%;
-  background: white;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
-  z-index: 999;
-}
-
-.dropdown-item {
-  color: #6e1010;
-  padding: 6px 0;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.dropdown-item:hover {
-  color: #4f46e5;
-}
-
-.nav-item {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
 .navbar {
   background: #302bb7;
   padding: 12px 24px;
   display: flex;
   align-items: center;
-  gap: 16px;
   position: fixed;
   top: 0;
   left: 0;
@@ -151,7 +129,6 @@ export default {
 
 .nav-logo {
   height: 56px;
-  width: auto;
   border-radius: 10px;
   background: white;
   padding: 2px;
@@ -160,12 +137,12 @@ export default {
 
 .nav-menu {
   display: flex;
-  justify-content: center;
   list-style: none;
   gap: 60px;
   padding: 10px;
   margin: 0;
   align-items: center;
+  justify-content: center;
 }
 
 .navbar-right {
@@ -186,6 +163,7 @@ export default {
   transition: all 0.2s ease;
   min-width: 120px;
   justify-content: center;
+  cursor: pointer;
 }
 
 .nav-link:hover {
@@ -198,25 +176,40 @@ export default {
   color: white;
 }
 
-.nav-link.active::after {
-  content: '';
+.nav-item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.account-dropdown {
   position: absolute;
-  bottom: -8px;
+  top: 120%;
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
- 
-  border-radius: 50%;
+  background: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  min-width: 160px;
 }
 
-.nav-link i {
-  font-size: 16px;
-  opacity: 0.8;
+.dropdown-item {
+  color: #374151;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.nav-link.active i {
-  opacity: 1;
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+  color: #1d4ed8;
 }
 
 @media (max-width: 768px) {
