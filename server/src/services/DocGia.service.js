@@ -39,37 +39,52 @@ parseDate(dateString) {
 
 
    async signIn(user) {
-    
-    if(!user || !user.SoDienThoai || !user.MatKhau) {
-      return { message: "Thông tin đăng nhập không hợp lệ !"}
-    }
-
-    try {
-
-        const userCheck = await userModel.findOne({SoDienThoai: user.SoDienThoai})
-
-        if(!userCheck) {
-          return { message: "Tài khoản không tồn tại !"}
-        }
-
-        const isPasswordValid = await bcrypt.compare(user.MatKhau, userCheck.MatKhau)
-
-        if(!isPasswordValid) {
-          return { message: "Mật khẩu không chính xác !"}
-        }
-
-        const { MatKhau, ...userInfor } = userCheck._doc
-
-        //jwt.sign(payload, secretOrPrivateKey, [options])
-        const token = jwt.sign(userInfor, process.env.JWT_SECRET || 'NHUTB2203520', { expiresIn:'1h'})
-
-        return {
-          data:{ user: userInfor, token},
-          message:"Đăng nhập thành công !"
-        }
-      
-    } catch (error) {
-      return {message: "Có lỗi xảy ra trong quá trình đăng nhập"}
+  if(!user || !user.SoDienThoai || !user.MatKhau) {
+    return { 
+      success: false,
+      message: "Thông tin đăng nhập không hợp lệ !"
     }
   }
+
+  try {
+    const userCheck = await userModel.findOne({SoDienThoai: user.SoDienThoai})
+
+    if(!userCheck) {
+      return { 
+        success: false,
+        message: "Tài khoản không tồn tại !"
+      }
+    }
+
+    const isPasswordValid = await bcrypt.compare(user.MatKhau, userCheck.MatKhau)
+
+    if(!isPasswordValid) {
+      return { 
+        success: false,
+        message: "Mật khẩu không chính xác !"
+      }
+    }
+
+    const { MatKhau, ...userInfor } = userCheck._doc
+
+    // Tạo JWT token
+    const token = jwt.sign(userInfor, process.env.JWT_SECRET || 'NHUTB2203520', { expiresIn:'1h'})
+
+    return {
+      success: true,
+      data: { 
+        user: userInfor, 
+        token 
+      },
+      message: "Đăng nhập thành công !"
+    }
+    
+  } catch (error) {
+    console.error("DocGia signIn error:", error);
+    return {
+      success: false,
+      message: "Có lỗi xảy ra trong quá trình đăng nhập"
+    }
+  }
+}
 };

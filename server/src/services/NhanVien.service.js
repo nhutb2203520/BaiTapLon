@@ -47,20 +47,27 @@ module.exports = class staffService {
       const payload = {
         _id: staffCheck._id,
         SoDienThoai: staffCheck.SoDienThoai,
-
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET || 'NHUTB2203520', { expiresIn: '1h' });
+      
+      // Tạo refreshToken (có thể giống token hoặc có thời hạn dài hơn)
+      const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'REFRESH_NHUTB2203520', { expiresIn: '7d' });
 
       const { MatKhau, ...staffInfor } = staffCheck._doc;
 
       return {
         success: true,
-        data: { staff: staffInfor, token },
+        data: { 
+          staff: staffInfor, 
+          token,
+          refreshToken // Thêm refreshToken vào response
+        },
         message: "Đăng nhập thành công!"
       };
 
     } catch (error) {
+      console.error("Staff login error:", error);
       return { success: false, message: "Có lỗi xảy ra trong quá trình đăng nhập", error };
     }
   }

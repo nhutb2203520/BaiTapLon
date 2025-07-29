@@ -19,26 +19,43 @@ module.exports.signUp =  async (req, res, next ) =>{
 }
 
 //POST [authen/signin]
-module.exports.signIn =  async (req, res, next) =>{
-    try {
-        const data = req.body
-        const user = new userService()
-        const signInResult = await user.signIn(data)
-        res.status(200).json(signInResult);
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while Signing in !!!"));
+module.exports.signIn = async (req, res, next) => {
+  try {
+    const data = req.body;
+    console.log("📥 Body nhận được (reader):", data);
+    
+    const user = new userService();
+    const signInResult = await user.signIn(data);
+    
+    console.log("📤 Kết quả signIn (reader):", signInResult);
+    
+    if (signInResult.success) {
+      res.status(200).json(signInResult);
+    } else {
+      res.status(400).json(signInResult);
     }
+  } catch (error) {
+    console.error("Controller signIn error:", error);
+    return next(new ApiError(500, "An error occurred while Signing in !!!"));
+  }
 }
 
+
 //POST [authen/staffsignin]
-module.exports.staffSignIn = async (req, res , next) => {
+module.exports.staffSignIn = async (req, res, next) => {
   try {
-    console.log("📥 Body nhận được:", req.body); // 👈 thêm dòng này
+    console.log("📥 Body nhận được (staff):", req.body);
     const data = req.body;
     const staff = new staffService();
     const signInResult = await staff.signIn(data);
-    res.status(200).json(signInResult);
+    
+    console.log("📤 Kết quả signIn (staff):", signInResult);
+    
+    if (signInResult.success) {
+      res.status(200).json(signInResult);
+    } else {
+      res.status(400).json(signInResult);
+    }
   } catch (error) {
     console.log(error);
     return next(new ApiError(500, "An error occurred while Signing in !!!"));

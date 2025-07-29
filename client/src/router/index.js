@@ -2,10 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePageAD from '../Views/HomePageAD.vue'
 import HomePage from '../Views/HomePage.vue'
 import QuanLyNXB from '../Views/QuanLyNXB.vue'
-import ThuThuDangNhap from '../components/Admin/ThuThuDangNhap.vue'
-import DocGiaDangNhap from '../components/Client/DocGiaDangNhap.vue'
+import DangNhap from '../Views/DangNhap.vue'
 import QuanLySach from '../Views/QuanLySach.vue'
-import { pa } from 'element-plus/es/locales.mjs'  
 import TaiKhoanDocGia from '../components/Client/TaiKhoanDocGia.vue'
 import TaiKhoanThuThu from '../components/Admin/TaiKhoanThuThu.vue'
 const routes = [
@@ -19,14 +17,9 @@ const routes = [
     component: HomePageAD
   },
   {
-    path: '/admin/login',
-    name: 'ThuThuDangNhap',
-    component: ThuThuDangNhap
-  },
-  {
-    path: '/reader/login',
-    name: 'DocGiaDangNhap',
-    component: DocGiaDangNhap
+    path: '/login',
+    name: 'DangNhap',
+    component: DangNhap
   },
   {
     path: '/admin/quan-ly-nxb',
