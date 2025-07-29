@@ -9,10 +9,14 @@ const bookSchema = new mongoose.Schema(
     SoQuyen: { type: Number, required: true },
     NamXuatBan: { type: Number, required: true },
     TacGia: { type: String },
-    MaNXB: { type: mongoose.Schema.Types.ObjectId, ref: "publisherSchema", required: true},
+    // ✅ SỬA: Đổi ref từ "publisherSchema" thành "NhaXuatBan"
+    MaNXB: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "NhaXuatBan", // ✅ Phải trùng với tên trong NhaXuatBan.model
+      required: true
+    },
     image: { type: String },
-    SoLuongDaMuon: { type: Number, required: true, default: 0 },
-    //them thuoc tinh SoLuongDaMuon
+    SoLuongDaMuon: { type: Number, required: true, default: 0 }
   },
   { timestamps: true, minimize: false, collection: 'Sach' }
 );

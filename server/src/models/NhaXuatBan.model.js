@@ -4,8 +4,8 @@
   const publisherSchema = new mongoose.Schema(
     {
       MaNXB: Number,
-      TenNXB: { type: String, require: true },
-      DiaChi: { type: String, require: true },
+      TenNXB: { type: String, required: true },
+      DiaChi: { type: String, required: true },
     },
     { timestamps: true,
       minimize: false,
@@ -13,7 +13,7 @@
     }
   );
 
-  publisherSchema.plugin(AutoIncrement, { inc_field: "MaNXB", start_seq: 1000 });
+  publisherSchema.plugin(AutoIncrement, { inc_field: "MaNXB", start_seq: 1 });
 
  module.exports = mongoose.model("NhaXuatBan", publisherSchema); // ✅
 

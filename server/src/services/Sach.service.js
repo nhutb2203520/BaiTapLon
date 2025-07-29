@@ -1,26 +1,25 @@
 const bookModel = require('../models/Sach.model')
 
 module.exports = class bookService {
-     async  getAll() {
+     async getAll() {
         const books = await bookModel.find().populate('MaNXB')
-        return{
-         books: books,
+        return {
+         danhsachsach: books, // ✅ Fix: đổi từ 'books' thành 'danhsachsach'
          message:'Lấy sách thành công!'
         }
      }
 
      async add(data) {
-      const isValid =  await bookModel.findOne({
+      const isValid = await bookModel.findOne({
          $or: [{TenSach: data.TenSach}, {MaSach: data.MaSach}]
       })
       
       if(!isValid) {
-
          const newBook = new bookModel(data)
          const savedBook = await newBook.save()
-         const returnBook =  await savedBook.populate('MaNXB')
+         const returnBook = await savedBook.populate('MaNXB')
          return {
-            book: returnBook,
+            sach: returnBook, // ✅ Fix: đổi từ 'book' thành 'sach'
             message: 'Thêm sách thành công!'
          }
       }
@@ -29,7 +28,7 @@ module.exports = class bookService {
       }
      }
 
-    async update( data) {
+    async update(data) {
       const updatedBook = await bookModel.findOneAndUpdate(
          {_id: data._id},
          { $set: {
@@ -39,7 +38,7 @@ module.exports = class bookService {
             NamXuatBan: data.NamXuatBan,
             TacGia: data.TacGia,
             MaNXB: data.MaNXB,
-            image:data.image
+            image: data.image
          }
          },
          { new: true}
@@ -51,12 +50,12 @@ module.exports = class bookService {
       }
        await updatedBook.populate('MaNXB')
        return {
-         book: updatedBook,
+         sach: updatedBook, // ✅ Fix: đổi từ 'book' thành 'sach'
          message: 'Cập nhật sách thành công!'
        }
      }
 
-     async delete (bookCode) {
+     async delete(bookCode) {
       const deletedBook = await bookModel.findOneAndDelete({MaSach: bookCode})
       return deletedBook
    }

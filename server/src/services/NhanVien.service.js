@@ -47,6 +47,7 @@ module.exports = class staffService {
       const payload = {
         _id: staffCheck._id,
         SoDienThoai: staffCheck.SoDienThoai,
+        ChucVu: staffCheck.ChucVu,
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET || 'NHUTB2203520', { expiresIn: '1h' });

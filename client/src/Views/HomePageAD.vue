@@ -13,9 +13,9 @@
       <!-- Quản lý chính - Hiển thị các nút -->
       <div v-if="currentTab === 'home'" class="management-buttons">
         <button @click="goToRoute('publisher')">Quản lý nhà xuất bản</button>
-        <button @click="handleTabChange('books')">Quản lý sách</button>
-        <button @click="handleTabChange('borrow')">Quản lý mượn/trả sách</button>
-        <button @click="handleTabChange('readers')">Quản lý độc giả</button>
+        <button @click="goToRoute('books')">Quản lý sách</button>
+        <button @click="goToRoute('borrow')">Quản lý mượn/trả sách</button>
+        <button @click="goToRoute('readers')">Quản lý độc giả</button>
       </div>
 
       <!-- Placeholder cho các tab quản lý -->
@@ -72,8 +72,15 @@ export default {
     const goToRoute = (tab) => {
       if (tab === 'publisher') {
         router.push('/admin/quan-ly-nxb') // 👉 điều hướng đến route cụ thể
-      } else {
-        handleTabChange(tab)
+      }   
+      else if(tab === 'books') {
+        router.push('/admin/quan-ly-sach')
+      }
+      else if(tab === 'borrow'){
+        router.push('/admin/quan-ly-muon-sach')
+      }
+      else if(tab === 'readers' ){
+        router.push('/admin/quan-ly-doc-gia')
       }
     }
 

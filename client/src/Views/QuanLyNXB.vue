@@ -11,6 +11,21 @@
       <p class="text-muted">Quản lý thông tin các nhà xuất bản trong hệ thống</p>
     </div>
 
+    <!-- Error Alert -->
+    <div v-if="publisherStore.error" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      {{ publisherStore.error }}
+      <button type="button" class="btn-close" @click="publisherStore.clearError()"></button>
+    </div>
+
+    <!-- Loading -->
+    <div v-if="publisherStore.loading" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+      <p class="mt-2 text-muted">Đang tải danh sách nhà xuất bản...</p>
+    </div>
+
     <!-- Tổng số + tìm kiếm + thêm -->
     <div class="card shadow-sm rounded-4 mb-4 p-4 bg-light">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
@@ -25,11 +40,14 @@
           <input
             type="text"
             class="form-control"
-            placeholder="Tìm kiếm theo tên, địa chỉ hoặc email..."
+            placeholder="Tìm kiếm theo tên, địa chỉ..."
             v-model="searchText"
           />
           <button class="btn btn-primary" @click="showForm = !showForm">
             <i class="bi bi-plus-lg me-1"></i> Thêm nhà xuất bản
+          </button>
+          <button class="btn btn-outline-secondary" @click="refreshData">
+            <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
           </button>
         </div>
       </div>
@@ -38,15 +56,28 @@
       <div v-if="showForm" class="mt-4">
         <div class="row g-3">
           <div class="col-md-6">
-            <input v-model="newNXB.TenNXB" type="text" class="form-control" placeholder="Tên nhà xuất bản" />
+            <input 
+              v-model="newNXB.TenNXB" 
+              type="text" 
+              class="form-control" 
+              placeholder="Tên nhà xuất bản *" 
+              required
+            />
           </div>
           <div class="col-md-6">
-            <input v-model="newNXB.DiaChi" type="text" class="form-control" placeholder="Địa chỉ" />
+            <input 
+              v-model="newNXB.DiaChi" 
+              type="text" 
+              class="form-control" 
+              placeholder="Địa chỉ *" 
+              required
+            />
           </div>
         </div>
         <div class="mt-3 d-flex gap-2">
-          <button class="btn btn-success" @click="addNXB">
-            <i class="bi bi-check-circle me-1"></i> Lưu
+          <button class="btn btn-success" @click="addNXB" :disabled="isAdding">
+            <i class="bi bi-check-circle me-1"></i>
+            {{ isAdding ? 'Đang lưu...' : 'Lưu' }}
           </button>
           <button class="btn btn-secondary" @click="cancelAdd">
             <i class="bi bi-x-circle me-1"></i> Huỷ
@@ -62,55 +93,62 @@
         <table class="table align-middle table-hover">
           <thead class="table-light">
             <tr>
+              <th>Mã NXB</th>
               <th>Nhà xuất bản</th>
-              <th></th>
-              <th></th>
+              <th>Địa chỉ</th>
+              <th>Ngày tạo</th>
               <th class="text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="(nxb, index) in filteredNXBs"
-              :key="index"
+              :key="nxb.MaNXB || nxb._id || index"
               class="nxb-row align-middle"
             >
+              <td>
+                <span class="badge bg-primary">{{ nxb.MaNXB || 'N/A' }}</span>
+              </td>
               <td>
                 <div class="d-flex align-items-start">
                   <i class="bi bi-journal-richtext text-primary fs-4 me-2 mt-1"></i>
                   <div>
-                    <div class="fw-semibold">{{ nxb.TenNXB }}</div>
-                    <div class="text-muted small">{{ nxb.DiaChi }}</div>
+                    <div class="fw-semibold">{{ nxb.TenNXB || 'Chưa có tên' }}</div>
+                    <div class="text-muted small">ID: {{ nxb._id }}</div>
                   </div>
                 </div>
               </td>
+              <td>{{ nxb.DiaChi || 'Chưa có địa chỉ' }}</td>
               <td>
-                <div>{{ nxb.DienThoai }}</div>
-                <div class="text-muted small">{{ nxb.Email }}</div>
-                <a
-                  :href="'https://' + nxb.Website"
-                  target="_blank"
-                  class="text-primary small text-decoration-none"
-                >
-                  {{ nxb.Website }}
-                </a>
-              </td>
-              <td>
-                <div>Thành lập: {{ nxb.NamThanhLap }}</div>
-                <div class="text-muted small">{{ nxb.SoSach || 0 }} cuốn sách</div>
+                <small class="text-muted">{{ formatDate(nxb.createdAt) }}</small>
               </td>
               <td class="text-center">
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                  <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1" title="Chỉnh sửa">
-                    <i class="bi bi-pencil-square"></i><span>Chỉnh sửa</span>
+                  <button 
+                    class="btn btn-sm btn-outline-warning d-flex align-items-center gap-1" 
+                    title="Chỉnh sửa"
+                    @click="editNXB(nxb)"
+                  >
+                    <i class="bi bi-pencil-square"></i><span>Sửa</span>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Xoá">
+                  <button 
+                    class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" 
+                    title="Xoá"
+                    @click="confirmDelete(nxb)"
+                  >
                     <i class="bi bi-trash"></i><span>Xoá</span>
                   </button>
                 </div>
               </td>
             </tr>
-            <tr v-if="filteredNXBs.length === 0">
-              <td colspan="4" class="text-center text-muted py-4">Không tìm thấy nhà xuất bản nào.</td>
+            <tr v-if="!publisherStore.loading && filteredNXBs.length === 0">
+              <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="mt-2">Không tìm thấy nhà xuất bản nào.</p>
+                <button class="btn btn-outline-primary btn-sm" @click="refreshData">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Thử lại
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -126,54 +164,95 @@ import { useNhaXuatBanStore } from '@/Store/NhaXuatBan.store'
 import NavBarAD from '../components/Admin/NavBarAD.vue'
 import SideBarAD from '../components/Admin/SideBarAD.vue'
 
-// Store
 const publisherStore = useNhaXuatBanStore()
 const searchText = ref('')
 const showForm = ref(false)
+const isAdding = ref(false)
 
-// Thông tin NXB mới
 const newNXB = ref({
   TenNXB: '',
   DiaChi: ''
 })
 
 onMounted(async () => {
-  await publisherStore.fetchAll()
+  await refreshData();
 })
 
-// Bộ lọc tìm kiếm
+const refreshData = async () => {
+  await publisherStore.fetchAll();
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  } catch {
+    return 'N/A';
+  }
+}
+
 const filteredNXBs = computed(() => {
-  return Array.isArray(publisherStore.listNXB)
-    ? publisherStore.listNXB.filter((nxb) =>
-        [nxb.TenNXB, nxb.DiaChi, nxb.Email]
-          .join(' ')
-          .toLowerCase()
-          .includes(searchText.value.toLowerCase())
-      )
-    : []
+  if (!Array.isArray(publisherStore.listNXB)) return [];
+
+  if (!searchText.value.trim()) {
+    return publisherStore.listNXB;
+  }
+
+  const keyword = searchText.value.toLowerCase().trim();
+  return publisherStore.listNXB.filter((nxb) => {
+    const tenNXB = (nxb.TenNXB || '').toLowerCase();
+    const diaChi = (nxb.DiaChi || '').toLowerCase();
+    const maNXB = (nxb.MaNXB || '').toString().toLowerCase();
+    
+    return tenNXB.includes(keyword) || 
+           diaChi.includes(keyword) || 
+           maNXB.includes(keyword);
+  });
 })
 
-// Thêm NXB
 const addNXB = async () => {
-  if (!newNXB.value.TenNXB || !newNXB.value.DiaChi) {
+  if (!newNXB.value.TenNXB?.trim() || !newNXB.value.DiaChi?.trim()) {
     alert('Vui lòng nhập đầy đủ thông tin!');
     return;
   }
 
+  isAdding.value = true;
   try {
-    await publisherStore.addNXB(newNXB.value); // Hàm addNXB phải có trong store
-    await publisherStore.fetchAll(); // Refresh danh sách
-    newNXB.value = { TenNXB: '', DiaChi: '' };
-    showForm.value = false;
+    const result = await publisherStore.addNXB(newNXB.value);
+    if (result.success) {
+      alert('Thêm nhà xuất bản thành công!');
+      newNXB.value = { TenNXB: '', DiaChi: '' };
+      showForm.value = false;
+      await refreshData();
+    } else {
+      alert(`Thêm thất bại: ${result.error}`);
+    }
   } catch (error) {
-    console.error('Lỗi khi thêm NXB:', error);
     alert('Thêm nhà xuất bản thất bại!');
+  } finally {
+    isAdding.value = false;
   }
 };
 
 const cancelAdd = () => {
   newNXB.value = { TenNXB: '', DiaChi: '' }
   showForm.value = false
+}
+
+const editNXB = (nxb) => {
+  alert('Chức năng chỉnh sửa đang được phát triển');
+}
+
+const confirmDelete = async (nxb) => {
+  if (confirm(`Bạn có chắc chắn muốn xóa nhà xuất bản "${nxb.TenNXB}"?`)) {
+    const result = await publisherStore.deleteNXB(nxb.MaNXB);
+    if (result.success) {
+      alert('Xóa nhà xuất bản thành công!');
+      await refreshData();
+    } else {
+      alert(`Xóa thất bại: ${result.error}`);
+    }
+  }
 }
 </script>
 
@@ -197,16 +276,7 @@ const cancelAdd = () => {
   border-color: #dc3545;
 }
 
-.btn-outline-warning span,
-.btn-outline-danger span {
-  transition: color 0.2s;
-}
-
-.btn-outline-warning:hover span {
-  color: #856404;
-}
-
-.btn-outline-danger:hover span {
-  color: #721c24;
+.badge {
+  font-size: 0.75rem;
 }
 </style>

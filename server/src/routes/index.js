@@ -4,7 +4,7 @@ const bookBorrwRouter = require("../routes/TheoDoiMuonSach.route")
 const publisherRouter = require("../routes/NhaXuatBan.route")
 module.exports = (app) =>{
     app.use('/authen', authenticationRouter)
-    app.use('/book', bookRouter)
+    app.use('/books', bookRouter)
     app.use('/borrow', bookBorrwRouter)
     app.use('/publisher', publisherRouter)
 }
