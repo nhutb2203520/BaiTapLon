@@ -77,7 +77,11 @@ module.exports.getNew = async (req, res, next) => {
 // [GET] [/books/:MaSach]
 module.exports.getById = async (req, res, next) => {
     try {
-        const book = await bookModel.findOne({MaSach: req.params.MaSach}).populate('MaNXB')
+        const book = await bookModel.findOne({MaSach: req.params.MaSach}).populate({
+            path: 'MaNXB',
+            localField: 'MaNXB',
+            foreignField: 'MaNXB'
+        })
         if (!book) {
             return next(new ApiError(404, "Không tìm thấy sách!"))
         }
@@ -91,42 +95,29 @@ module.exports.getById = async (req, res, next) => {
     }
 }
 
-// [POST] [/books]
+// [POST] [/books] - ✅ SỬA LẠI: Chỉ giữ 1 function add duy nhất
 module.exports.add = async (req, res, next) => {
-    if(!req.body.TenSach) {
+    console.log('Payload received add book:', req.body);
+    
+    if (!req.body.TenSach) {
         return next(new ApiError(400, "Tên sách không được để trống!"))
     }
+    
     try {
         await verifyToken(req, res)
-         
+        
         const bookservice = new bookService()
         const result = await bookservice.add(req.body)
+        
+        console.log('Service result:', result);
         res.json(result)
     } catch (error) {
-        console.log(error)
-        if(error == 'Unauthorized !') {
+        console.error('❌ Error in add book controller:', error);
+        if (error === 'Unauthorized !') {
             return next(new ApiError(401, error))
         }
         return next(new ApiError(500, "An error occurred while adding book !"))
     }
-
-    module.exports.add = async (req, res, next) => {
-  console.log('Payload received add book:', req.body);
-  try {
-    await verifyToken(req, res);
-    const bookservice = new bookService();
-    const result = await bookservice.add(req.body);
-    console.log('Service result:', result);
-    res.json(result);
-  } catch (error) {
-    console.error('❌ Error in add book controller:', error);
-    if (error === 'Unauthorized !') {
-      return next(new ApiError(401, error));
-    }
-    return next(new ApiError(500, "Error while adding book"));
-  }
-};
-
 }
 
 // [PATCH] [/books/:MaSach]

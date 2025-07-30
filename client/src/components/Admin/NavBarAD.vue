@@ -34,7 +34,7 @@
               <a href="#" class="dropdown-item" @click="logout">Đăng xuất</a>
             </template>
             <template v-else>
-              <router-link class="dropdown-item" to="/admin/login">Đăng nhập</router-link>
+              <router-link class="dropdown-item" to="/login">Đăng nhập</router-link>
             </template>
           </div>
         </li>

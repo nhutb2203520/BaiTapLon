@@ -9,10 +9,10 @@ const bookSchema = new mongoose.Schema(
     SoQuyen: { type: Number, required: true },
     NamXuatBan: { type: Number, required: true },
     TacGia: { type: String },
-    // ✅ SỬA: Đổi ref từ "publisherSchema" thành "NhaXuatBan"
-    MaNXB: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "NhaXuatBan", // ✅ Phải trùng với tên trong NhaXuatBan.model
+    // ✅ SỬA: Đổi từ ObjectId sang Number để khớp với NhaXuatBan.model
+    MaNXB: {
+      type: Number, // ✅ Đổi từ mongoose.Schema.Types.ObjectId sang Number
+      ref: "NhaXuatBan",
       required: true
     },
     image: { type: String },
