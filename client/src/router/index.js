@@ -9,6 +9,7 @@ import TaiKhoanThuThu from '../components/Admin/TaiKhoanThuThu.vue'
 import component from 'element-plus/es/components/tree-select/src/tree-select-option.mjs'
 import QuanLyMuonSach from '../Views/QuanLyMuonSach.vue'
 import QuanLyDocGia from '../Views/QuanLyDocGia.vue'
+import DocGiaDangKy from '../components/Client/DocGiaDangKy.vue'
 const routes = [
   { path: '/',
     name: HomePage,
@@ -23,6 +24,11 @@ const routes = [
     path: '/login',
     name: 'DangNhap',
     component: DangNhap
+  },
+  {
+    path: '/reader/signup',
+    name: 'DocGiaDangKy',
+    component: DocGiaDangKy
   },
   {
     path: '/admin/quan-ly-nxb',
