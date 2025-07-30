@@ -1,23 +1,34 @@
 <template>
-  <div class="profile-container d-flex align-items-center justify-content-center py-5">
-    <div class="profile-card card shadow p-4 rounded-4 w-100" style="max-width: 900px;">
+  <div class="profile-wrapper">
+    <div class="profile-card card shadow p-4 rounded-4 w-100">
       <!-- Ảnh đại diện và tiêu đề -->
-      <div class="text-center">
+      <div class="text-center mb-4">
         <img class="avatar mb-3" src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="User Avatar" />
         <h4 class="fw-bold">Tài Khoản Thủ Thư</h4>
         <p class="text-muted">Thông tin chi tiết của bạn</p>
       </div>
 
       <!-- Thông tin cá nhân -->
-      <div class="info-box mt-4 p-4 rounded bg-light border">
-        <h5 class="fw-semibold mb-3 text-primary">Thông tin tài khoản</h5>
-        <p v-if="userInfo"><strong>Họ tên:</strong> {{ capitalizeWords(userInfo.HoTen) }}</p>
-        <p v-if="userInfo && userInfo.NgaySinh"><strong>Ngày sinh:</strong> {{ formatDate(userInfo.NgaySinh) }}</p>
-        <p v-if="userInfo"><strong>Email:</strong> {{ userInfo.Email }}</p>
-        <p v-if="userInfo"><strong>Số điện thoại:</strong> {{ userInfo.SoDienThoai }}</p>
-        <p v-if="userInfo"><strong>Địa chỉ:</strong> {{ capitalizeWords(userInfo.DiaChi || '') }}</p>
-        <p v-if="userInfo"><strong>Ngày tạo:</strong> {{ formatDate(userInfo.createdAt) }}</p>
-        <p v-if="userInfo"><strong>Trạng thái:</strong> {{ capitalizeWords(userInfo.MaTT?.TenTT) }}</p>
+      <div class="info-box p-4 rounded bg-light border">
+        <h5 class="fw-semibold mb-3 text-primary text-center">Thông tin tài khoản</h5>
+
+
+        <p v-if="staffInfo"><strong>Họ tên:</strong> {{ capitalizeWords(staffInfo.HoTenNV || '') }}</p>
+        <p v-if="staffInfo"><strong>Chức vụ:</strong> {{ capitalizeWords(staffInfo.ChucVu || '') }}</p>
+        <p v-if="staffInfo"><strong>Địa chỉ:</strong> {{ capitalizeWords(staffInfo.DiaChi || '') }}</p>
+        <p v-if="staffInfo"><strong>Số điện thoại:</strong> {{ staffInfo.SoDienThoai }}</p>
+        <p v-if="staffInfo"><strong>Ngày tạo:</strong> {{ formatDate(staffInfo.createdAt) }}</p>
+
+        <div v-if="loading" class="text-center my-3">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+
+        <div v-if="error" class="alert alert-danger mt-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          {{ error }}
+        </div>
       </div>
 
       <!-- Các nút hành động -->
@@ -25,23 +36,28 @@
         <button class="btn btn-primary fw-bold" @click="$router.push('/account-user/update-account')">
           <i class="bi bi-pencil-square me-1"></i> Cập nhật
         </button>
-        <button v-if="!isGoogle" class="btn btn-outline-secondary fw-bold" @click="$router.push('/account-user/change-password')">
+        <button
+          v-if="!isGoogle"
+          class="btn btn-outline-secondary fw-bold"
+          @click="$router.push('/account-user/change-password')"
+        >
           <i class="bi bi-key-fill me-1"></i> Đổi mật khẩu
         </button>
-        
       </div>
     </div>
   </div>
 </template>
-<script setup>
-import { ref, onMounted } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
-import { useAuthStore } from '@/Store/auth.store';
-// import { useReaderStore } from '@/Store/Reader.store'; // Nếu bạn dùng store này, bỏ comment
 
-const userInfo = ref(null);
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useAuthStore } from '@/Store/auth.store';
+
 const authStore = useAuthStore();
-// const readerStore = useReaderStore(); // Nếu có store, bật lại
+const loading = ref(false);
+const error = ref('');
+
+// ✅ SỬA: Lấy thông tin từ authStore.staffInfo thay vì gọi API
+const staffInfo = computed(() => authStore.staffInfo);
 
 // 🧠 Hàm decode JWT token
 function decodeToken(token) {
@@ -62,12 +78,14 @@ function decodeToken(token) {
 
 // 🧠 Hàm định dạng ngày
 function formatDate(dateStr) {
+  if (!dateStr) return 'N/A';
   const date = new Date(dateStr);
   return date.toLocaleDateString('vi-VN');
 }
 
 // 🧠 Hàm viết hoa mỗi từ
 function capitalizeWords(str) {
+  if (!str) return '';
   return str
     .toLowerCase()
     .split(' ')
@@ -75,25 +93,42 @@ function capitalizeWords(str) {
     .join(' ');
 }
 
-const isGoogle = decodeToken(authStore.accessToken)?.type === 'google';
+const isGoogle = computed(() => decodeToken(authStore.accessToken)?.type === 'google');
 
+// ✅ SỬA: Không cần gọi API vì thông tin đã có trong authStore
 onMounted(async () => {
   try {
-    const res = await readerStore.getMyAccount(); // Nếu không có readerStore, cần xử lý lại
-    userInfo.value = res;
+    loading.value = true;
+    
+    // Kiểm tra xem có thông tin staff không
+    if (!authStore.staffInfo || Object.keys(authStore.staffInfo).length === 0) {
+      error.value = 'Không tìm thấy thông tin thủ thư. Vui lòng đăng nhập lại.';
+      return;
+    }
+    
+    console.log('📋 Staff info loaded:', authStore.staffInfo);
+    
   } catch (err) {
-    console.error(err);
-    ElMessage.error('Không thể tải thông tin người dùng!');
+    console.error('❌ Error loading staff info:', err);
+    error.value = 'Không thể tải thông tin người dùng!';
+  } finally {
+    loading.value = false;
   }
 });
-
-
 </script>
-
 <style scoped>
-.profile-container {
-  background: linear-gradient(135deg, #f0f4ff, #d9e2ff);
+.profile-wrapper {
   min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f4ff, #d9e2ff);
+  padding: 40px 20px;
+}
+
+.profile-card {
+  max-width: 700px;
+  background: #ffffff;
 }
 
 .avatar {
@@ -101,11 +136,13 @@ onMounted(async () => {
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
+  border: 3px solid #dee2e6;
 }
 
 .info-box p {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-size: 16px;
+  color: #333;
 }
 
 .btn {
