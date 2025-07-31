@@ -1,17 +1,18 @@
-const express = require("express")
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
+const sachController = require('../controllers/Sach.controller');
 
-const bookController = require('../controllers/Sach.controller')
+// ✅ THÊM: Route upload ảnh sách
+router.post('/upload', sachController.uploadImage);
 
-// ✅ Routes khớp với frontend calls
-router
-    .get('/', bookController.getAll)              // GET /books
-    .get('/hot', bookController.getHot)           // GET /books/hot
-    .get('/new', bookController.getNew)           // GET /books/new
-    .get('/:MaSach', bookController.getById)      // GET /books/:MaSach
-    .post('/', bookController.add)                // POST /books
-    .patch('/:MaSach', bookController.update)     // PATCH /books/:MaSach
-    .delete('/:MaSach', bookController.delete)    // DELETE /books/:MaSach
-    .delete('/', bookController.deleteAll)        // DELETE /books
+// Các route khác
+router.get('/', sachController.getAll);
+router.get('/hot', sachController.getHot);
+router.get('/new', sachController.getNew);
+router.get('/:MaSach', sachController.getById);
+router.post('/', sachController.add);
+router.patch('/:MaSach', sachController.update);
+router.delete('/:MaSach', sachController.delete);
+router.delete('/', sachController.deleteAll);
 
-module.exports = router
+module.exports = router;

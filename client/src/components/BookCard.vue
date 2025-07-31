@@ -1,163 +1,104 @@
 <template>
-  <div class="book-card" @click="$emit('view', book)">
-    <div class="book-cover">
-      <i class="fas fa-book"></i>
+  <div class="bg-white border rounded-3 p-2 d-flex flex-column text-center align-items-center book-hover h-100">
+    <!-- Ảnh chiếm khoảng 50% -->
+    <div class="book-image-container mb-2" @click="goToDetail">
+      <img
+        :src="getImageUrl(book.image)"
+        :alt="book.TenSach"
+        class="img-fluid rounded h-100 w-100 object-fit-cover"
+        @error="handleImageError"
+      />
     </div>
 
-    <div class="book-title">{{ book.title }}</div>
-    <div class="book-author">{{ book.author }}</div>
-
-    <div class="book-meta">
-      <span class="badge category">{{ getCategoryName(book.category) }}</span>
-      <span class="badge" :class="book.status">
-        <i :class="book.status === 'available' ? 'fas fa-check-circle' : 'fas fa-clock'" />
-        {{ book.status === 'available' ? 'Có sẵn' : 'Đã mượn' }}
+    <!-- Nội dung chiếm 50% -->
+    <div class="book-content w-100 d-flex flex-column justify-content-between">
+      <h6 class="text-dark fw-semibold mb-1 text-center" style="min-height: 36px">
+        {{ capitalizeWords(book.TenSach) }}
+      </h6>
+      <p class="text-muted fst-italic mb-1 small">
+        {{ capitalizeWords(book.TacGia) }}
+      </p>
+      <span class="badge rounded-pill px-2 py-1 mb-2" :class="book.SoQuyen > 0 ? 'bg-success' : 'bg-danger'">
+        <i class="fas fa-book me-1"></i>
+        {{ book.SoQuyen > 0 ? `Còn ${book.SoQuyen} cuốn` : 'Hết sách' }}
       </span>
-    </div>
 
-    <div class="book-actions">
-      <button class="btn primary" :disabled="book.status !== 'available'" @click.stop="$emit('borrow', book)">
-        <i class="fas fa-book-reader"></i> Mượn sách
-      </button>
-      <button class="btn outline" @click.stop="$emit('view', book)">
-        <i class="fas fa-info-circle"></i> Chi tiết
-      </button>
+      <div class="d-flex gap-1 w-100 mt-auto">
+        <button class="btn btn-sm btn-primary flex-fill" :disabled="book.SoQuyen <= 0" @click="handleBorrowClick">
+          <i class="fas fa-book-reader me-1"></i> Mượn
+        </button>
+        <button class="btn btn-sm btn-outline-info flex-fill" @click="goToDetail">
+          <i class="fas fa-info-circle me-1"></i> Chi tiết
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
-defineProps(['book'])
+<script>
+import { capitalizeWords } from "@/utils/stringUtils";
 
-function getCategoryName(category) {
-  const map = {
-    technology: 'Công nghệ',
-    business: 'Kinh doanh',
-    history: 'Lịch sử',
-    philosophy: 'Triết học'
-  }
-  return map[category] || 'Khác'
-}
+export default {
+  name: "BookCard",
+  props: {
+    book: {
+      type: Object,
+      required: true,
+    },
+  },
+  emits: ["borrow-book"],
+  methods: {
+    capitalizeWords,
+    getImageUrl(imagePath) {
+      if (!imagePath) return "/default-book.jpg";
+      if (imagePath.startsWith("http")) return imagePath;
+      const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+      return `${baseURL}/${imagePath.replace(/^\/+/, "")}`;
+    },
+    handleImageError(event) {
+      event.target.src = "/default-book.jpg";
+    },
+    handleBorrowClick() {
+      this.$emit("borrow-book", this.book);
+    },
+    goToDetail() {
+      this.$router.push(`/book/${this.book.MaSach}`);
+    },
+  },
+};
 </script>
 
 <style scoped>
-.book-card {
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  padding: 1rem;
-  text-align: center;
+.book-hover {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   transition: transform 0.3s, box-shadow 0.3s;
-  max-width: 250px;
-  width: 150%;
- 
- 
-}
-.book-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
-.book-cover {
-  height: 140px;
-  background: #667eea;
-  color: white;
+.book-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.book-image-container {
+  height: 50%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.book-content {
+  height: 50%;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
-  border-radius: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.book-title {
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin-bottom: 0.3rem;
-}
-
-.book-author {
-  color: #6b7280;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-}
-
-.book-meta {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.badge {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-}
-
-.category {
-  background: #f1f1f1;
-  color: #333;
-}
-
-.available {
-  background: #dcfce7;
-  color: #15803d;
-}
-.borrowed {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.book-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .btn {
-  flex: 1;
-  padding: 0.6rem;
-  font-weight: 600;
-  border-radius: 0.6rem;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transition: 0.2s;
-  cursor: pointer;
+  transition: all 0.3s ease;
 }
-
-.primary {
-  background: #667eea;
-  color: white;
-  border: none;
-}
-.primary:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
-}
-
-.outline {
-  background: white;
-  color: #333;
-  border: 1px solid #ccc;
-}
-
-@media (max-width: 480px) {
-  .book-meta {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .book-actions {
-    flex-direction: column;
-  }
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 </style>

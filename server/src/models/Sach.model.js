@@ -9,13 +9,16 @@ const bookSchema = new mongoose.Schema(
     SoQuyen: { type: Number, required: true },
     NamXuatBan: { type: Number, required: true },
     TacGia: { type: String },
-    // ✅ SỬA: Đổi từ ObjectId sang Number để khớp với NhaXuatBan.model
     MaNXB: {
-      type: Number, // ✅ Đổi từ mongoose.Schema.Types.ObjectId sang Number
+      type: Number,
       ref: "NhaXuatBan",
       required: true
     },
-    image: { type: String },
+    // ✅ THÊM: Field image với validation
+    image: { 
+      type: String,
+      default: null // Mặc định null nếu không có ảnh
+    },
     SoLuongDaMuon: { type: Number, required: true, default: 0 }
   },
   { timestamps: true, minimize: false, collection: 'Sach' }

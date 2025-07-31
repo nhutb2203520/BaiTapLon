@@ -37,12 +37,10 @@ export const useBookStore = defineStore("book", {
         console.log('✅ API Response:', response);
         console.log('📊 Response data:', response.data);
         
-        // ✅ Kiểm tra structure của response
         if (response.data && response.data.danhsachsach) {
           console.log('📚 Books found:', response.data.danhsachsach.length);
           this.setBooks(response.data.danhsachsach);
         } else if (response.data && Array.isArray(response.data)) {
-          // Backup case nếu backend trả về array trực tiếp
           console.log('📚 Books array found:', response.data.length);
           this.setBooks(response.data);
         } else {
@@ -53,28 +51,8 @@ export const useBookStore = defineStore("book", {
         return response.data;
       } catch (err) {
         console.error('❌ Error in fetchBooks:', err);
-        console.error('❌ Error message:', err.message);
-        console.error('❌ Error response:', err.response);
-        
-        // ✅ Xử lý các loại lỗi khác nhau
-        let errorMessage = 'Lỗi không xác định';
-        
-        if (err.response) {
-          // Server responded with error status
-          errorMessage = `Lỗi ${err.response.status}: ${err.response.data?.message || err.response.statusText}`;
-          console.error('❌ Server error:', err.response.status, err.response.data);
-        } else if (err.request) {
-          // Request was made but no response
-          errorMessage = 'Không thể kết nối đến server';
-          console.error('❌ Network error:', err.request);
-        } else {
-          // Something else happened
-          errorMessage = err.message;
-          console.error('❌ Request setup error:', err.message);
-        }
-        
-        this.setError(errorMessage);
-        throw err; // ✅ Re-throw để component có thể catch
+        this.handleError(err);
+        throw err;
       } finally {
         this.setLoading(false);
       }
@@ -92,13 +70,13 @@ export const useBookStore = defineStore("book", {
         if (response.data.danhsachsach) {
           if (!Array.isArray(this.books)) this.books = [];
           this.setBooks(response.data.danhsachsach);
+          return response.data.danhsachsach;
         }
         
-        return response.data.danhsachsach;
+        return [];
       } catch (err) {
         console.error('❌ Error in fetchBooksHot:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
@@ -114,12 +92,15 @@ export const useBookStore = defineStore("book", {
         const response = await axios.get("/books/new");
         console.log('🆕 New books response:', response.data);
         
-        this.setBooks(response.data.danhsachsach);
-        return response.data.danhsachsach;
+        if (response.data.danhsachsach) {
+          this.setBooks(response.data.danhsachsach);
+          return response.data.danhsachsach;
+        }
+        
+        return [];
       } catch (err) {
         console.error('❌ Error in fetchBooksNew:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
@@ -137,40 +118,52 @@ export const useBookStore = defineStore("book", {
         return response.data;
       } catch (err) {
         console.error('❌ Error in fetchBookByMaSach:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
       }
     },
     
-    async uploadImageBook(file) {
-      console.log('📸 Starting uploadImageBook:', file.name);
-      this.setLoading(true);
-      this.setError(null);
-      
-      try {
-        const formData = new FormData();
-        formData.append("image", file);
-        
-        const response = await axios.post(`/upload`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        
-        console.log('📸 Upload response:', response.data);
-        return response.data;
-      } catch (err) {
-        console.error('❌ Error in uploadImageBook:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
-        throw err;
-      } finally {
-        this.setLoading(false);
-      }
-    },
+    // ✅ CẬP NHẬT: Upload ảnh với endpoint mới
+    // ✅ SỬA: Upload ảnh với endpoint đúng
+async uploadImageBook(file) {
+  console.log('📸 Starting uploadImageBook:', file.name);
+  this.setLoading(true);
+  this.setError(null);
+  
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    
+    // ✅ SỬA: Sử dụng endpoint /books/upload
+    const response = await axios.post(`/books/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    
+    console.log('📸 Upload response:', response.data);
+    
+    if (response.data.success) {
+      return {
+        success: true,
+        imageUrl: response.data.imageUrl,
+        message: response.data.message
+      };
+    } else {
+      throw new Error(response.data.message || 'Upload failed');
+    }
+  } catch (err) {
+    console.error('❌ Error in uploadImageBook:', err);
+    console.error('❌ Error response:', err.response?.data);
+    console.error('❌ Error status:', err.response?.status);
+    this.handleError(err);
+    throw err;
+  } finally {
+    this.setLoading(false);
+  }
+},
     
     async addOneBook(data) {
       console.log('➕ Starting addOneBook:', data);
@@ -178,33 +171,31 @@ export const useBookStore = defineStore("book", {
       this.setError(null);
 
       try {
-        const token = localStorage.getItem("accessToken"); // ✅ Lấy token
+        const token = localStorage.getItem("accessToken");
 
         const response = await axios.post(`/books`, data, {
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ Truyền token
+            Authorization: `Bearer ${token}`,
           },
         });
 
         console.log('➕ Add book response:', response.data);
 
-        if (response.data.sach) {
+        if (response.data.success && response.data.sach) {
           if (!Array.isArray(this.books)) this.books = [];
-          this.books.push(response.data.sach);
+          this.books.unshift(response.data.sach); // ✅ Thêm vào đầu danh sách
         }
 
         return response.data;
       } catch (err) {
         console.error('❌ Error in addOneBook:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
       }
     },
 
-    
     async deleteOneBook(MaSach) {
       console.log('🗑️ Starting deleteOneBook:', MaSach);
       this.setLoading(true);
@@ -213,11 +204,16 @@ export const useBookStore = defineStore("book", {
       try {
         const response = await axios.delete(`/books/${MaSach}`);
         console.log('🗑️ Delete book response:', response.data);
+        
+        // ✅ Cập nhật state local
+        if (response.data.success) {
+          this.books = this.books.filter(book => book.MaSach !== MaSach);
+        }
+        
         return response.data;
       } catch (err) {
         console.error('❌ Error in deleteOneBook:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
@@ -232,15 +228,41 @@ export const useBookStore = defineStore("book", {
       try {
         const response = await axios.patch(`/books/${MaSach}`, data);
         console.log('✏️ Update book response:', response.data);
+        
+        // ✅ Cập nhật state local
+        if (response.data.success && response.data.sach) {
+          const index = this.books.findIndex(book => book.MaSach === MaSach);
+          if (index !== -1) {
+            this.books[index] = response.data.sach;
+          }
+        }
+        
         return response.data;
       } catch (err) {
         console.error('❌ Error in updateBook:', err);
-        const errorMessage = err.response?.data?.message || err.message;
-        this.setError(errorMessage);
+        this.handleError(err);
         throw err;
       } finally {
         this.setLoading(false);
       }
     },
+
+    // ✅ THÊM: Helper method xử lý lỗi
+    handleError(err) {
+      let errorMessage = 'Lỗi không xác định';
+      
+      if (err.response) {
+        errorMessage = `Lỗi ${err.response.status}: ${err.response.data?.message || err.response.statusText}`;
+        console.error('❌ Server error:', err.response.status, err.response.data);
+      } else if (err.request) {
+        errorMessage = 'Không thể kết nối đến server';
+        console.error('❌ Network error:', err.request);
+      } else {
+        errorMessage = err.message;
+        console.error('❌ Request setup error:', err.message);
+      }
+      
+      this.setError(errorMessage);
+    }
   },
 });

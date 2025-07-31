@@ -33,15 +33,15 @@
           <i class="bi bi-person-lines-fill fs-1 text-primary me-3"></i>
           <div>
             <h5 class="mb-0 fw-bold">Tổng số độc giả</h5>
-            <span class="fs-4 text-primary">{{ filteredReaders.length }}</span> người
+            <span class="fs-4 text-primary">{{ readerStore.filteredReaders.length }}</span> người
           </div>
         </div>
         <div class="d-flex gap-2 flex-column flex-md-row w-100 w-md-auto">
           <input
             type="text"
             class="form-control"
-            placeholder="Tìm theo tên, mã độc giả, email..."
-            v-model="searchText"
+            placeholder="Tìm theo tên, mã độc giả, SĐT..."
+            v-model="readerStore.searchText"
           />
           <button class="btn btn-outline-secondary" @click="refreshData">
             <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
@@ -52,33 +52,41 @@
 
     <!-- Danh sách độc giả -->
     <div class="card shadow-sm rounded-4 p-4 bg-white">
-      <h5 class="fw-bold mb-3">Danh sách độc giả ({{ filteredReaders.length }})</h5>
+      <h5 class="fw-bold mb-3">Danh sách độc giả ({{ readerStore.filteredReaders.length }})</h5>
       <div class="table-responsive">
         <table class="table align-middle table-hover">
           <thead class="table-light">
             <tr>
-              <th>Mã độc giả</th>
+              <th>STT</th>
               <th>Họ tên</th>
-              <th>Email</th>
-              <th>Ngày đăng ký</th>
+              <th>Giới tính</th>
+              <th>SĐT</th>
+              <th>Địa chỉ</th>
+              <th>Ngày sinh</th>
               <th class="text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(reader, index) in filteredReaders" :key="reader._id || index">
-              <td><span class="badge bg-primary">{{ reader.MaDocGia || 'N/A' }}</span></td>
-              <td class="fw-semibold">{{ reader.TenDocGia }}</td>
-              <td>{{ reader.Email }}</td>
-              <td><small class="text-muted">{{ formatDate(reader.NgayDangKy) }}</small></td>
+            <tr v-for="(reader, index) in readerStore.filteredReaders" :key="reader._id || index">
+              <td><span class="badge bg-primary">{{ index + 1 }}</span></td>
+              <td class="fw-semibold">{{ getFullName(reader) }}</td>
+              <td>
+                <span class="badge" :class="reader.GioiTinh === 'Nam' ? 'bg-info' : 'bg-warning'">
+                  <i :class="reader.GioiTinh === 'Nam' ? 'bi bi-gender-male' : 'bi bi-gender-female'"></i>
+                  {{ reader.GioiTinh }}
+                </span>
+              </td>
+              <td>{{ reader.SoDienThoai }}</td>
+              <td><small class="text-muted">{{ reader.DiaChi }}</small></td>
+              <td><small class="text-muted">{{ formatDate(reader.NgaySinh) }}</small></td>
               <td class="text-center">
-                <!-- Placeholder for future action buttons -->
                 <button class="btn btn-sm btn-outline-danger" @click="deleteReader(reader)">
                   <i class="bi bi-trash me-1"></i> Xóa
                 </button>
               </td>
             </tr>
-            <tr v-if="!readerStore.loading && filteredReaders.length === 0">
-              <td colspan="5" class="text-center text-muted py-4">
+            <tr v-if="!readerStore.loading && readerStore.filteredReaders.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">
                 <i class="bi bi-inbox fs-1 text-muted"></i>
                 <p class="mt-2">Không tìm thấy độc giả nào.</p>
               </td>
@@ -91,20 +99,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import NavBarAD from '../components/Admin/NavBarAD.vue'
 import SideBarAD from '../components/Admin/SideBarAD.vue'
 import { useReaderStore } from '@/Store/DocGia.store'
+import { useAuthStore } from '@/Store/auth.store'
+import axios from '@/utils/axios'
 
 const readerStore = useReaderStore()
-const searchText = ref('')
 
 onMounted(async () => {
   await refreshData()
 })
 
 const refreshData = async () => {
-  await readerStore.fetchAll()
+  // Sử dụng method từ store hiện tại
+  await readerStore.fetchAllReaders()
 }
 
 const formatDate = (dateStr) => {
@@ -112,23 +122,34 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('vi-VN')
 }
 
-const filteredReaders = computed(() => {
-  if (!Array.isArray(readerStore.list)) return []
-  const keyword = searchText.value.toLowerCase().trim()
-  if (!keyword) return readerStore.list
-
-  return readerStore.list.filter(reader =>
-    reader.TenDocGia?.toLowerCase().includes(keyword) ||
-    reader.MaDocGia?.toString().includes(keyword) ||
-    reader.Email?.toLowerCase().includes(keyword)
-  )
-})
+const getFullName = (reader) => {
+  if (!reader) return 'N/A'
+  return `${reader.HoLot || ''} ${reader.Ten || ''}`.trim() || reader.SoDienThoai
+}
 
 const deleteReader = async (reader) => {
-  const confirmMsg = `Xác nhận xóa độc giả "${reader.TenDocGia}"?`
+  const fullName = getFullName(reader)
+  const confirmMsg = `Xác nhận xóa độc giả "${fullName}"?`
+  
   if (confirm(confirmMsg)) {
-    await readerStore.deleteReader(reader._id)
-    await refreshData()
+    try {
+      // Call API to delete reader
+      const authStore = useAuthStore()
+      const response = await axios.delete(`/readers/${reader._id}`, {
+        headers: {
+          Authorization: `Bearer ${authStore.accessToken}`,
+        },
+      })
+      
+      if (response.data.success) {
+        alert(`✅ ${response.data.message}`)
+        await refreshData() // Refresh data after deletion
+      }
+    } catch (error) {
+      console.error('❌ Error deleting reader:', error)
+      const errorMessage = error.response?.data?.message || 'Không thể xóa độc giả'
+      alert(`❌ ${errorMessage}`)
+    }
   }
 }
 </script>

@@ -171,3 +171,64 @@ module.exports.signUp = async (req, res, next) => {
     return next(new ApiError(500, "Có lỗi xảy ra khi đăng ký"));
   }
 };
+// [GET] [/readers] - Lấy danh sách tất cả độc giả (cho admin)
+module.exports.getAllReaders = async (req, res, next) => {
+  try {
+    const decoded = verifyToken(req);
+    
+    console.log("📤 Đang lấy danh sách tất cả độc giả...");
+
+    const readers = await userModel.find({}).select('-MatKhau').sort({ _id: -1 });
+    
+    console.log(`✅ Tìm thấy ${readers.length} độc giả`);
+
+    res.json({
+      success: true,
+      userList: readers, // Khớp với tên trong store hiện tại
+      countUser: readers.length,
+      message: 'Lấy danh sách độc giả thành công!'
+    });
+
+  } catch (error) {
+    console.error('❌ Error in getAllReaders:', error);
+    if (error.message === 'Unauthorized !') {
+      return next(new ApiError(401, error.message));
+    }
+    return next(new ApiError(500, "Có lỗi xảy ra khi lấy danh sách độc giả"));
+  }
+};
+
+// [DELETE] [/readers/:id] - Xóa độc giả (cho admin)
+module.exports.deleteReader = async (req, res, next) => {
+  try {
+    const decoded = verifyToken(req);
+    
+    const readerId = req.params.id;
+    
+    if (!readerId) {
+      return next(new ApiError(400, "ID độc giả không hợp lệ"));
+    }
+
+    console.log("📤 Đang xóa độc giả:", readerId);
+
+    const deletedReader = await userModel.findByIdAndDelete(readerId);
+    
+    if (!deletedReader) {
+      return next(new ApiError(404, "Không tìm thấy độc giả"));
+    }
+
+    console.log(`✅ Đã xóa độc giả: ${deletedReader.HoLot} ${deletedReader.Ten}`);
+
+    res.json({
+      success: true,
+      message: `Xóa độc giả "${deletedReader.HoLot} ${deletedReader.Ten}" thành công`
+    });
+
+  } catch (error) {
+    console.error('❌ Error in deleteReader:', error);
+    if (error.message === 'Unauthorized !') {
+      return next(new ApiError(401, error.message));
+    }
+    return next(new ApiError(500, "Có lỗi xảy ra khi xóa độc giả"));
+  }
+};

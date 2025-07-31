@@ -1,189 +1,244 @@
 const bookService = require('../services/Sach.service')
-const bookModel = require('../models/Sach.model') // ✅ Import model để dùng trong getById
-const jwt = require('jsonwebtoken')
-const ApiError = require('../ApiError')
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
 
-function verifyToken(req, res) {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return Promise.reject('Unauthorized !');
+// ✅ THÊM: Cấu hình multer để upload ảnh
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = 'uploads/books/'
+    
+    // Tạo thư mục nếu chưa tồn tại
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true })
     }
-       
-    const token = authHeader.split(' ')[1];
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, process.env.JWT_SECRET || 'NHUTB2203520', (error, user) => {
-        if (error || !user.ChucVu) {
-          return reject('Unauthorized !');
-        }
-        resolve(user);
+    
+    cb(null, uploadPath)
+  },
+  filename: function (req, file, cb) {
+    // Tạo tên file unique: timestamp + random + extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, 'book-' + uniqueSuffix + path.extname(file.originalname))
+  }
+})
+
+// ✅ THÊM: Kiểm tra file type
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(new Error('Chỉ chấp nhận file ảnh (JPEG, PNG, GIF, WebP)'), false)
+  }
+}
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // Giới hạn 5MB
+  }
+})
+
+// ✅ SỬA: Upload ảnh sách - syntax đã sai
+module.exports.uploadImage = (req, res, next) => {
+  // Sử dụng middleware upload trước
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('❌ Multer error:', err);
+      return res.status(400).json({
+        success: false,
+        message: err.message
       });
-    });
-}
+    }
 
-// [GET] [/books]
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không có file ảnh được upload'
+        });
+      }
+
+      // Trả về URL của ảnh
+      const imageUrl = `/uploads/books/${req.file.filename}`;
+      
+      console.log('📸 Image uploaded successfully:', imageUrl);
+      
+      res.json({
+        success: true,
+        imageUrl: imageUrl,
+        message: 'Upload ảnh thành công!'
+      });
+    } catch (error) {
+      console.error('❌ Error uploading image:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi khi upload ảnh'
+      });
+    }
+  });
+};
+
+// [GET] [/books] - Lấy tất cả sách
 module.exports.getAll = async (req, res, next) => {
-    try {
-        const bookservice = new bookService()
-        const result = await bookservice.getAll()
-        res.json(result)
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while getAll books !"))
-    }
+  try {
+    const bookservice = new bookService()
+    const result = await bookservice.getAll()
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in getAll:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy danh sách sách'
+    })
+  }
 }
 
-// [GET] [/books/hot]
+// [GET] [/books/hot] - Lấy sách nổi bật
 module.exports.getHot = async (req, res, next) => {
-    try {
-        const bookservice = new bookService()
-        const result = await bookservice.getAll()
-        
-        // Sách hot = sách có SoLuongDaMuon cao nhất
-        const hotBooks = result.danhsachsach
-            .sort((a, b) => (b.SoLuongDaMuon || 0) - (a.SoLuongDaMuon || 0))
-            .slice(0, 10)
-        
-        res.json({
-            danhsachsach: hotBooks,
-            message: 'Lấy sách hot thành công!'
-        })
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while getting hot books !"))
-    }
+  try {
+    const bookservice = new bookService()
+    const result = await bookservice.getHot()
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in getHot:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy sách nổi bật'
+    })
+  }
 }
 
-// [GET] [/books/new]  
+// [GET] [/books/new] - Lấy sách mới
 module.exports.getNew = async (req, res, next) => {
-    try {
-        const bookservice = new bookService()
-        const result = await bookservice.getAll()
-        
-        // Sách mới = sách được tạo gần đây nhất
-        const newBooks = result.danhsachsach
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 10)
-        
-        res.json({
-            danhsachsach: newBooks,
-            message: 'Lấy sách mới thành công!'
-        })
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while getting new books !"))
-    }
+  try {
+    const bookservice = new bookService()
+    const result = await bookservice.getNew()
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in getNew:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy sách mới'
+    })
+  }
 }
 
-// [GET] [/books/:MaSach]
+// [GET] [/books/:MaSach] - Lấy sách theo mã
 module.exports.getById = async (req, res, next) => {
-    try {
-        const book = await bookModel.findOne({MaSach: req.params.MaSach}).populate({
-            path: 'MaNXB',
-            localField: 'MaNXB',
-            foreignField: 'MaNXB'
-        })
-        if (!book) {
-            return next(new ApiError(404, "Không tìm thấy sách!"))
-        }
-        res.json({
-            sach: book,
-            message: 'Lấy thông tin sách thành công!'
-        })
-    } catch (error) {
-        console.log(error)
-        return next(new ApiError(500, "An error occurred while getting book !"))
-    }
+  try {
+    const bookservice = new bookService()
+    const result = await bookservice.getById(req.params.MaSach)
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in getById:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy thông tin sách'
+    })
+  }
 }
 
-// [POST] [/books] - ✅ SỬA LẠI: Chỉ giữ 1 function add duy nhất
+// [POST] [/books] - Thêm sách mới
 module.exports.add = async (req, res, next) => {
-    console.log('Payload received add book:', req.body);
+  try {
+    console.log('📝 Adding new book with data:', req.body)
+    console.log('📸 Image field:', req.body.image) // ✅ THÊM log debug
     
-    if (!req.body.TenSach) {
-        return next(new ApiError(400, "Tên sách không được để trống!"))
-    }
+    const bookservice = new bookService()
+    const result = await bookservice.add(req.body)
     
-    try {
-        await verifyToken(req, res)
-        
-        const bookservice = new bookService()
-        const result = await bookservice.add(req.body)
-        
-        console.log('Service result:', result);
-        res.json(result)
-    } catch (error) {
-        console.error('❌ Error in add book controller:', error);
-        if (error === 'Unauthorized !') {
-            return next(new ApiError(401, error))
-        }
-        return next(new ApiError(500, "An error occurred while adding book !"))
-    }
+    console.log('✅ Book added successfully:', result)
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in add:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi thêm sách'
+    })
+  }
 }
 
-// [PATCH] [/books/:MaSach]
+// [PATCH] [/books/:MaSach] - Cập nhật sách
 module.exports.update = async (req, res, next) => {
-    try {
-        await verifyToken(req, res)
-        
-        // ✅ Tìm sách theo MaSach trước
-        const existingBook = await bookModel.findOne({MaSach: req.params.MaSach})
-        if (!existingBook) {
-            return next(new ApiError(404, "Không tìm thấy sách!"))
-        }
-        
-        const bookservice = new bookService()
-        // ✅ Truyền _id thay vì MaSach vì service.update() expect _id
-        const dataToUpdate = {
-            ...req.body,
-            _id: existingBook._id
-        }
-        const result = await bookservice.update(dataToUpdate)
-        res.json(result)
-    } catch (error) {
-        console.log(error)
-        if(error == 'Unauthorized !') {
-            return next(new ApiError(401, error))
-        }
-        return next(new ApiError(500, "An error occurred while updating book !"))
-    }
+  try {
+    console.log('✏️ Updating book:', req.params.MaSach, req.body)
+    
+    const bookservice = new bookService()
+    const result = await bookservice.update({
+      MaSach: req.params.MaSach,
+      ...req.body
+    })
+    
+    res.json(result)
+  } catch (error) {
+    console.error('❌ Error in update:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi cập nhật sách'
+    })
+  }
 }
 
-// [DELETE] [/books/:MaSach]
+// [DELETE] [/books/:MaSach] - Xóa sách
 module.exports.delete = async (req, res, next) => {
-    try {
-        await verifyToken(req, res)
-        const bookservice = new bookService()
-        const result = await bookservice.delete(req.params.MaSach)
-        if(!result) {
-            return next(new ApiError(404, "Không tìm thấy sách!"))
-        }
-        return res.json({
-            result,
-            message: "Xóa sách thành công!"
-        })
-    } catch (error) {
-        console.log(error)
-        if(error == 'Unauthorized !') {
-            return next(new ApiError(401, error))
-        }
-        return next(new ApiError(500, "An error occurred while deleting book !"))
+  try {
+    console.log('🗑️ Deleting book:', req.params.MaSach)
+    
+    const bookservice = new bookService()
+    
+    // ✅ THÊM: Lấy thông tin sách trước khi xóa để xóa ảnh
+    const book = await bookservice.getById(req.params.MaSach)
+    
+    const result = await bookservice.delete(req.params.MaSach)
+    
+    // ✅ THÊM: Xóa file ảnh nếu có
+    if (book && book.sach && book.sach.image) {
+      const imagePath = path.join(__dirname, '..', book.sach.image)
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath)
+        console.log('🗑️ Deleted image file:', imagePath)
+      }
     }
+    
+    if (result) {
+      res.json({
+        success: true,
+        message: 'Xóa sách thành công'
+      })
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy sách'
+      })
+    }
+  } catch (error) {
+    console.error('❌ Error in delete:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi xóa sách'
+    })
+  }
 }
 
-// [DELETE] [/books]
+// [DELETE] [/books] - Xóa tất cả sách
 module.exports.deleteAll = async (req, res, next) => {
-    try {
-        await verifyToken(req, res)
-        const bookservice = new bookService()
-        const deletedCount = await bookservice.deleteAll()
-        res.json({
-            message: `${deletedCount} sách được xóa thành công!`
-        })
-    } catch (error) {
-        console.log(error)
-        if(error == 'Unauthorized !') {
-            return next(new ApiError(401, error))
-        }
-        return next(new ApiError(500, "An error occurred deleting all books !"))
-    }
+  try {
+    const bookservice = new bookService()
+    const result = await bookservice.deleteAll()
+    
+    res.json({
+      success: true,
+      deletedCount: result,
+      message: `Đã xóa ${result} sách`
+    })
+  } catch (error) {
+    console.error('❌ Error in deleteAll:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi xóa tất cả sách'
+    })
+  }
 }

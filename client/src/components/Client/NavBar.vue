@@ -1,41 +1,43 @@
 <template>
   <nav class="navbar">
     <!-- Logo -->
-     <router-link to="/">
+    <router-link to="/">
       <img class="nav-logo" src="@/assets/logoweb.jpg" alt="Logo" />
-     </router-link>
-    
+    </router-link>
 
     <!-- Menu chính -->
     <div class="nav-container">
       <ul class="nav-menu">
+        <!-- Trang chủ -->
         <li class="nav-item">
-          <a
-            href="#"
+          <router-link
+            to="/"
             class="nav-link"
-            :class="{ active: activeTab === 'home' }"
-            @click.prevent="changeTab('home')"
+            :class="{ active: currentTab === 'home' }"
           >
             <i class="fas fa-home"></i>
             <span>Trang chủ</span>
-          </a>
+          </router-link>
         </li>
+
+        <!-- Danh mục sách -->
         <li class="nav-item">
-          <a
-            href="#"
+          <router-link
+            to="/readers/danh-muc-sach"
             class="nav-link"
-            :class="{ active: activeTab === 'books' }"
-            @click.prevent="changeTab('books')"
+            :class="{ active: currentTab === 'books' }"
           >
             <i class="fas fa-layer-group"></i>
             <span>Danh mục sách</span>
-          </a>
+          </router-link>
         </li>
+
+        <!-- Lịch sử mượn -->
         <li class="nav-item">
           <a
             href="#"
             class="nav-link"
-            :class="{ active: activeTab === 'history' }"
+            :class="{ active: currentTab === 'history' }"
             @click.prevent="changeTab('history')"
           >
             <i class="fas fa-history"></i>
@@ -45,7 +47,7 @@
 
         <!-- Dropdown tài khoản -->
         <li class="nav-item" @click.stop="toggleDropdown">
-          <div class="nav-link" :class="{ active: activeTab === 'account' }">
+          <div class="nav-link" :class="{ active: currentTab === 'account' }">
             <i class="fas fa-user"></i>
             <span>Tài khoản</span>
           </div>
@@ -53,11 +55,11 @@
           <div v-if="showDropdown" class="account-dropdown">
             <template v-if="isLoggedIn">
               <router-link class="dropdown-item" to="/reader/account">Tài khoản</router-link>
-              <a href="#" class="dropdown-item" @click="logout">Đăng xuất</a>
+              <a href="#" class="dropdown-item" @click.prevent="logout">Đăng xuất</a>
             </template>
             <template v-else>
               <router-link class="dropdown-item" to="/login">Đăng nhập</router-link>
-              <a href="#" class="dropdown-item" @click="changeTab('signup')">Đăng ký</a>
+              <a href="#" class="dropdown-item" @click.prevent="changeTab('signup')">Đăng ký</a>
             </template>
           </div>
         </li>
@@ -66,59 +68,66 @@
   </nav>
 </template>
 
-<script>
+<script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/Store/auth.store'
 import { ElMessage } from 'element-plus'
 
-export default {
-  name: 'LibraryHeader',
-  props: {
-    activeTab: {
-      type: String,
-      default: 'home'
-    }
-  },
-  emits: ['tab-changed'],
-  setup(props, { emit }) {
-    const authStore = useAuthStore()
-    const showDropdown = ref(false)
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const showDropdown = ref(false)
 
-    const changeTab = (tab) => {
-      emit('tab-changed', tab)
-      showDropdown.value = false
-    }
+const currentTab = computed(() => {
+  if (route.path === '/') return 'home'
+  if (route.path.includes('/readers/danh-muc-sach')) return 'books'
+  if (route.path.includes('readers/lich-su-muon-sach') || route.path.includes('/history')) return 'history'
+  if (route.path.includes('/reader/account')) return 'account'
+  return ''
+})
 
-    const toggleDropdown = () => {
-      showDropdown.value = !showDropdown.value
-    }
-
-    const closeDropdown = (event) => {
-      const path = event.composedPath?.() || event.path || []
-      const isInside = path.some(el => el?.classList?.contains?.('nav-item'))
-      if (!isInside) showDropdown.value = false
-    }
-
-    const isLoggedIn = computed(() => !!authStore.accessToken)
-
-    const logout = () => {
-      authStore.logout()
-      ElMessage.success('Đăng xuất thành công!')
-      changeTab('home')
-    }
-
-    onMounted(() => window.addEventListener('click', closeDropdown))
-    onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
-
-    return {
-      changeTab,
-      toggleDropdown,
-      showDropdown,
-      isLoggedIn,
-      logout
-    }
+const changeTab = (tab) => {
+  showDropdown.value = false
+  switch (tab) {
+    case 'home':
+      router.push('/')
+      break
+    case 'books':
+      router.push('/readers/danh-muc-sach')
+      break
+    case 'history':
+      router.push('/readers/lich-su-muon-sach') // Cập nhật đúng path nếu khác
+      break
+    case 'account':
+      router.push('/reader/account')
+      break
+    case 'signup':
+      router.push('/signup') // Cập nhật đúng path nếu khác
+      break
   }
 }
+
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value
+}
+
+const closeDropdown = (event) => {
+  const path = event.composedPath?.() || event.path || []
+  const isInside = path.some(el => el?.classList?.contains?.('nav-item'))
+  if (!isInside) showDropdown.value = false
+}
+
+const isLoggedIn = computed(() => !!authStore.accessToken)
+
+const logout = () => {
+  authStore.logout()
+  ElMessage.success('Đăng xuất thành công!')
+  changeTab('home')
+}
+
+onMounted(() => window.addEventListener('click', closeDropdown))
+onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
 </script>
 
 <style scoped>
@@ -188,8 +197,14 @@ export default {
 }
 
 .nav-link.active {
-  background: #4f46e5;
-  color: white;
+  background-color: #4f46e5;
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  padding: 14px 22px;
+  transition: all 0.3s ease;
 }
 
 .nav-link.active::after {
@@ -198,8 +213,8 @@ export default {
   bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   background: #4f46e5;
   border-radius: 50%;
 }

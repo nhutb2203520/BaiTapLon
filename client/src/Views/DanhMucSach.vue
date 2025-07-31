@@ -8,10 +8,9 @@
       <!-- Hero Section -->
       <section class="hero">
         <div class="container">
-          <h1>Thư viện Tri thức</h1>
+          <h1>Danh mục sách</h1>
           <p>
-            Chào mừng bạn đến với thư viện số hiện đại - nơi hội tụ tri thức và cảm hứng.
-            Khám phá hàng nghìn đầu sách chất lượng cao, phục vụ mọi nhu cầu học tập và nghiên cứu.
+            Khám phá thư viện phong phú với các sách nổi bật, sách mới cập nhật và toàn bộ kho sách hiện có.
           </p>
           <div class="hero-stats">
             <div class="hero-stat" v-for="(value, key) in stats" :key="key">
@@ -25,15 +24,16 @@
       <!-- Welcome Message -->
       <section class="container">
         <div class="welcome-message">
-          <h2>Khám phá thế giới sách</h2>
-          <p>Hãy bắt đầu hành trình khám phá tri thức với những cuốn sách được chọn lọc kỹ càng.</p>
+          <h2>Danh mục sách của thư viện</h2>
+          <p>Bạn có thể lựa chọn theo các danh mục bên dưới để bắt đầu khám phá.</p>
         </div>
       </section>
 
       <!-- Sách nổi bật -->
       <SachNoiBat />
-      <!-- Recent Books -->
-      <!-- <section class="container">
+
+      <!-- Sách mới cập nhật -->
+      <section class="container">
         <div class="section">
           <h2 class="section-title">
             <i class="fas fa-plus-circle"></i> Sách mới cập nhật
@@ -48,7 +48,25 @@
             />
           </div>
         </div>
-      </section> -->
+      </section>
+
+      <!-- Tất cả sách thư viện -->
+      <section class="container">
+        <div class="section">
+          <h2 class="section-title">
+            <i class="fas fa-book"></i> Tất cả sách trong thư viện
+          </h2>
+          <div class="books-grid">
+            <BookCard
+              v-for="book in allBooks"
+              :key="book.id"
+              :book="book"
+              @borrow="borrowBook"
+              @view="viewDetails"
+            />
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- Footer -->
@@ -59,52 +77,59 @@
 <script setup>
 import NavBar from '@/components/Client/NavBar.vue'
 import Footer from '@/components/Client/Footer.vue'
-
-import SachNoiBat from '../components/Client/SachNoiBat.vue'
+import BookCard from '@/components/BookCard.vue'
+import SachNoiBat from '@/components/Client/SachNoiBat.vue'
 import { useBookStore } from '@/Store/Sach.store'
-
 
 const bookStore = useBookStore()
 
 const stats = {
-  totalBooks: 28547,
-  availableBooks: 23850,
+  totalBooks: 5000,
+  availableBooks: 4300,
   totalMembers: 15240
 }
 
-const recentBooks = [
-  { id: 4, title: 'Blockchain', author: 'Đặng Hùng', status: 'available', category: 'technology' },
-  { id: 5, title: 'Triết học Đông phương', author: 'Bùi Thị Nga', status: 'available', category: 'philosophy' }
-]
-
 const getStatLabel = (key) => {
   return {
-    totalBooks: 'Đầu sách',
+    totalBooks: 'Tổng số sách',
     availableBooks: 'Sách có sẵn',
     totalMembers: 'Thành viên'
   }[key] || ''
 }
 
+// Giả lập danh sách sách mới
+const recentBooks = [
+  { id: 11, MaSach: 11, TenSach: 'AI Thời Đại Mới', TacGia: 'Nguyễn Văn A', image: '/uploads/ai.jpg' },
+  { id: 12, MaSach: 12, TenSach: 'Lập trình Web', TacGia: 'Trần Văn B', image: '/uploads/web.jpg' }
+]
+
+// Giả lập danh sách tất cả sách
+const allBooks = [
+  { id: 1, MaSach: 1, TenSach: 'Đắc Nhân Tâm', TacGia: 'Dale Carnegie', image: '/uploads/dac-nhan-tam.jpg' },
+  { id: 2, MaSach: 2, TenSach: 'Tư Duy Nhanh và Chậm', TacGia: 'Daniel Kahneman', image: '/uploads/fast-slow.jpg' },
+  { id: 3, MaSach: 3, TenSach: 'Lập trình Python', TacGia: 'Lê Minh Hoàng', image: '/uploads/python.jpg' },
+  // ... thêm các sách khác nếu muốn
+]
+
 const borrowBook = (book) => {
-  if (book.status === 'available') {
-    alert(`Yêu cầu mượn sách: ${book.title}`)
+  if (book.status === 'available' || !book.status) {
+    alert(`Yêu cầu mượn sách: ${book.TenSach || book.title}`)
   }
 }
 
 const viewDetails = (book) => {
-  alert(`Chi tiết sách:\nTiêu đề: ${book.title}\nTác giả: ${book.author}`)
+  alert(`Chi tiết sách:\nTiêu đề: ${book.TenSach || book.title}\nTác giả: ${book.TacGia || book.author}`)
 }
 </script>
-
 
 <style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
 
 .home-page {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #c490c4 100%);
+  background: linear-gradient(135deg, #4e54c8, #8f94fb);
   min-height: 100vh;
-  padding: 100px
+  padding: 100px;
 }
 
 .container {
@@ -157,7 +182,7 @@ const viewDetails = (book) => {
 .welcome-message {
   text-align: center;
   color: white;
-  background: rgba(59, 43, 43, 0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 2rem;
   border-radius: 1rem;
   margin-bottom: 3rem;

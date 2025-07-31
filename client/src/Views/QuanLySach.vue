@@ -50,10 +50,21 @@ const filteredBooks = computed(() => {
 const handleImageUpload = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
+  
   try {
+    console.log('📤 Uploading file:', file.name);
     const result = await bookStore.uploadImageBook(file);
-    newBook.value.image = result.imgUrl;
+    console.log('📤 Upload result:', result);
+    
+    // ✅ SỬA: Đổi từ imgUrl thành imageUrl
+    if (result.success && result.imageUrl) {
+      newBook.value.image = result.imageUrl;
+      console.log('✅ Image URL saved:', newBook.value.image);
+    } else {
+      throw new Error('Upload không thành công');
+    }
   } catch (error) {
+    console.error('❌ Upload error:', error);
     alert('Tải ảnh thất bại: ' + (error.message || 'Lỗi không xác định'));
   }
 };
@@ -63,16 +74,20 @@ const addBook = async () => {
     alert('Vui lòng nhập đầy đủ thông tin bắt buộc!');
     return;
   }
+  
   try {
+    console.log('📚 Adding book with data:', newBook.value);
+    console.log('📸 Image URL being sent:', newBook.value.image);
+    
     await bookStore.addOneBook(newBook.value);
     await retryFetch();
     resetForm();
     alert('Thêm sách thành công!');
   } catch (error) {
+    console.error('❌ Add book error:', error);
     alert('Thêm sách thất bại: ' + (error.message || 'Lỗi không xác định'));
   }
 };
-
 const editBook = (book) => {
   // TODO: thêm chức năng sửa
 };

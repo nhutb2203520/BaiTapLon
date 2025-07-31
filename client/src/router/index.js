@@ -10,6 +10,8 @@ import component from 'element-plus/es/components/tree-select/src/tree-select-op
 import QuanLyMuonSach from '../Views/QuanLyMuonSach.vue'
 import QuanLyDocGia from '../Views/QuanLyDocGia.vue'
 import DocGiaDangKy from '../components/Client/DocGiaDangKy.vue'
+import DanhMucSach from '../Views/DanhMucSach.vue'
+import LichSuMuonSach from '../components/Client/LichSuMuonSach.vue'
 const routes = [
   { path: '/',
     name: HomePage,
@@ -59,6 +61,16 @@ const routes = [
     path: '/admin/account',
     name: 'TaiKhoanThuThu',
     component: TaiKhoanThuThu,
+  },
+  {
+    path: '/readers/danh-muc-sach',
+    name: 'DanhMucSach',
+    component: DanhMucSach
+  },
+  {
+    path: '/readers/lich-su-muon-sach',
+    name: 'LichSuMuonSach',
+    component: LichSuMuonSach
   }
 ]
 

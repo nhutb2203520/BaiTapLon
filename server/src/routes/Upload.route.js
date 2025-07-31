@@ -1,88 +1,83 @@
-    const express = require('express');
-    const multer = require('multer');
-    const path = require('path');
-    const fs = require('fs');
-    const router = express.Router();
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
-    // ✅ Tạo thư mục uploads nếu chưa có
-    const uploadDir = 'uploads/books';
-    if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-    }
+// Tạo thư mục uploads nếu chưa tồn tại
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Created uploads directory:', uploadsDir);
+}
 
-    // ✅ Cấu hình multer storage
-    const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        // Tạo tên file unique: timestamp_originalname
-        const uniqueName = Date.now() + '_' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-    });
+// Cấu hình multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
 
-    // ✅ Cấu hình multer với validation
-    const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        // Chỉ cho phép ảnh
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-        if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-        } else {
-        cb(new Error('Chỉ cho phép upload file ảnh (jpg, jpeg, png, gif, webp)'), false);
-        }
-    }
-    });
+const fileFilter = (req, file, cb) => {
+  // Chỉ chấp nhận file ảnh
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Chỉ chấp nhận file ảnh (jpg, png, gif, etc.)'), false);
+  }
+};
 
-    // ✅ Route upload single image
-    router.post('/', upload.single('image'), (req, res) => {
-    try {
-        if (!req.file) {
-        return res.status(400).json({
-            success: false,
-            message: 'Không có file được upload!'
-        });
-        }
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: fileFilter
+});
 
-        // Trả về đường dẫn file
-        const imageUrl = `/uploads/books/${req.file.filename}`;
-        
-        res.json({
-        success: true,
-        message: 'Upload ảnh thành công!',
-        imageUrl: imageUrl,
-        fileName: req.file.filename
-        });
-
-    } catch (error) {
-        console.error('Upload error:', error);
-        res.status(500).json({
-        success: false,
-        message: 'Lỗi server khi upload ảnh!'
-        });
-    }
-    });
-
-    // ✅ Error handling middleware
-    router.use((error, req, res, next) => {
-    if (error instanceof multer.MulterError) {
-        if (error.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({
-            success: false,
-            message: 'File quá lớn! Kích thước tối đa 5MB.'
-        });
-        }
-    }
+// Route upload ảnh
+router.post('/image', upload.single('image'), (req, res) => {
+  try {
+    console.log('📤 Upload request received');
+    console.log('📄 File info:', req.file);
     
-    res.status(400).json({
+    if (!req.file) {
+      return res.status(400).json({
         success: false,
-        message: error.message || 'Lỗi upload file!'
-    });
-    });
+        message: 'Không có file được upload'
+      });
+    }
 
-    module.exports = router;
+    const imageUrl = `/uploads/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      message: 'Upload ảnh thành công',
+      imageUrl: imageUrl,
+      filename: req.file.filename
+    });
+    
+  } catch (error) {
+    console.error('❌ Upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi upload ảnh',
+      error: error.message
+    });
+  }
+});
+
+// Route test
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Upload route is working!',
+    uploadsDir: uploadsDir
+  });
+});
+
+module.exports = router;

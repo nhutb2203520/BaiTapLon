@@ -1,49 +1,48 @@
 <template>
-  <div class="container-fluid bg-dark text-white py-5">
-    <div class="text-center mb-5">
-      <h2 class="text-info fw-bold display-5">SÁCH NỔI BẬTt</h2>
-      <div class="d-flex justify-content-center align-items-center gap-3">
-        <div class="bg-info" style="width: 80px; height: 2px;"></div>
-        <div class="fs-3">📖</div>
-        <div class="bg-info" style="width: 80px; height: 2px;"></div>
-      </div>
-    </div>
-
-    <div class="book-carousel-container position-relative bg-secondary bg-opacity-25 rounded shadow px-4 py-3"
-      @mouseover="stopAutoSlide" @mouseleave="startAutoSlide">
-      <div class="book-carousel" ref="carousel">
-        <div v-for="book in books" :key="book._id" class="book-card-wrapper">
-          <BookCard :book="book" :hoverEffect="true" />
+  
+    <div class="hot-book-wrapper bg-white shadow mx-3 p-4" style="border-radius: 24px;">
+      <div class="text-center mb-4">
+        <h2 class="text-primary fw-bold display-7">SÁCH NỔI BẬT</h2>
+        <div class="d-flex justify-content-center align-items-center gap-3">
+          <div class="bg-primary" style="width: 80px; height: 2px;"></div>
+          <div class="fs-3">📖</div>
+          <div class="bg-primary" style="width: 80px; height: 2px;"></div>
         </div>
       </div>
 
-      <button class="btn btn-info rounded-circle position-absolute top-50 start-0 translate-middle-y z-3"
-        @click="prevSlide">
-        ❮
-      </button>
-      <button class="btn btn-info rounded-circle position-absolute top-50 end-0 translate-middle-y z-3"
-        @click="nextSlide">
-        ❯
-      </button>
+      <div
+        class="book-carousel-container position-relative px-3 py-3"
+        @mouseover="stopAutoSlide"
+        @mouseleave="startAutoSlide"
+      >
+        <div class="book-carousel" ref="carousel">
+          <div v-for="book in books" :key="book._id" class="book-card-wrapper">
+            <BookCard :book="book" @borrow-book="handleBorrow" />
+          </div>
+        </div>
+
+        <button class="btn btn-primary rounded-circle position-absolute top-50 start-0 translate-middle-y z-3" @click="prevSlide">❮</button>
+        <button class="btn btn-primary rounded-circle position-absolute top-50 end-0 translate-middle-y z-3" @click="nextSlide">❯</button>
+      </div>
+
+      <p v-if="books.length === 0" class="text-danger text-center fw-bold fs-5 mt-4">
+        Thư viện không có sách phù hợp.
+      </p>
     </div>
 
-    <p v-if="books.length === 0" class="text-warning text-center fw-bold fs-5 mt-4">
-      Thư viện không có sách phù hợp.
-    </p>
-  </div>
 </template>
 
 <script>
-import BookCard from '@/components/BookCard.vue';
-import { useBookStore } from '@/Store/Sach.store';
+import BookCard from "@/components/BookCard.vue";
+import { useBookStore } from "@/Store/Sach.store";
 
 export default {
-  name: 'HotBook',
+  name: "HotBook",
   components: { BookCard },
   data() {
     return {
       books: [],
-      autoSlideInterval: null
+      autoSlideInterval: null,
     };
   },
   methods: {
@@ -52,22 +51,46 @@ export default {
         const bookStore = useBookStore();
         this.books = await bookStore.fetchBooksHot();
       } catch (error) {
-        console.error('Lỗi khi lấy sách nổi bật:', error);
+        console.error("Lỗi khi lấy sách nổi bật:", error);
         this.books = [];
+      }
+    },
+    handleBorrow(book) {
+      const isLoggedIn = this.checkUserLogin();
+      if (!isLoggedIn) {
+        this.$router.push("/login");
+        return;
+      }
+
+      const confirmed = confirm(`Bạn có muốn mượn sách "${book.TenSach}" không?`);
+      if (confirmed) this.borrowBook(book);
+    },
+    checkUserLogin() {
+      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+      return !!token;
+    },
+    async borrowBook(book) {
+      try {
+        const bookStore = useBookStore();
+        const result = await bookStore.borrowBook(book.MaSach);
+
+        if (result.success) {
+          alert(`Mượn sách "${book.TenSach}" thành công!`);
+          await this.loadBooks();
+        } else {
+          alert(result.message || "Có lỗi xảy ra khi mượn sách");
+        }
+      } catch (error) {
+        console.error("Lỗi khi mượn sách:", error);
+        alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
       }
     },
     scrollCarousel(direction) {
       const carousel = this.$refs.carousel;
-      if (!carousel) return;
-
-      const firstCard = carousel.querySelector('.book-card-wrapper');
+      const firstCard = carousel?.querySelector(".book-card-wrapper");
       if (!firstCard) return;
-
-      const scrollAmount = firstCard.offsetWidth + 16; // Chiều rộng thẻ + gap
-      carousel.scrollBy({
-        left: scrollAmount * direction,
-        behavior: 'smooth'
-      });
+      const scrollAmount = firstCard.offsetWidth + 16;
+      carousel.scrollBy({ left: scrollAmount * direction, behavior: "smooth" });
     },
     nextSlide() {
       this.scrollCarousel(1);
@@ -80,9 +103,8 @@ export default {
       this.autoSlideInterval = setInterval(() => {
         const carousel = this.$refs.carousel;
         if (!carousel) return;
-
         if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
-          carousel.scrollTo({ left: 0, behavior: 'smooth' });
+          carousel.scrollTo({ left: 0, behavior: "smooth" });
         } else {
           this.nextSlide();
         }
@@ -90,34 +112,32 @@ export default {
     },
     stopAutoSlide() {
       clearInterval(this.autoSlideInterval);
-    }
+    },
   },
   mounted() {
-    this.loadBooks().then(() => {
-      this.startAutoSlide();
-    });
+    this.loadBooks().then(this.startAutoSlide);
   },
   beforeUnmount() {
     this.stopAutoSlide();
-  }
+  },
 };
 </script>
 
 <style scoped>
+.hot-book-wrapper {
+  border-radius: 24px;
+}
+
 .book-carousel {
   display: flex;
   gap: 16px;
-  /* Khoảng cách giữa các sách */
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 1rem;
-  /* Tạo không gian để scrollbar (nếu hiện) không che nội dung */
-
-  /* Ẩn thanh cuộn */
   scrollbar-width: none;
   -ms-overflow-style: none;
+  align-items: stretch;
 }
-
 .book-carousel::-webkit-scrollbar {
   display: none;
 }
@@ -125,60 +145,45 @@ export default {
 .book-card-wrapper {
   scroll-snap-align: start;
   flex-shrink: 0;
-
-  /* === THAY ĐỔI CHÍNH Ở ĐÂY === */
-  /* Tính toán chiều rộng chính xác cho 5 cuốn sách */
-  /* Công thức: (100% tổng chiều rộng - tổng các khoảng trống) / số lượng sách */
-  /* 4 khoảng trống * 16px = 64px */
+  display: flex;
+  height: 280px;
   width: calc((100% - 64px) / 5);
 }
 
 @media (max-width: 1200px) {
   .book-card-wrapper {
-    /* Tính toán cho 4 cuốn sách */
-    /* 3 khoảng trống * 16px = 48px */
     width: calc((100% - 48px) / 4);
+    height: 270px;
   }
 }
-
 @media (max-width: 992px) {
   .book-card-wrapper {
-    /* Tính toán cho 3 cuốn sách */
-    /* 2 khoảng trống * 16px = 32px */
     width: calc((100% - 32px) / 3);
+    height: 260px;
   }
 }
-
 @media (max-width: 768px) {
   .book-card-wrapper {
-    /* Trên màn hình nhỏ nhất, vẫn nên hiển thị một phần sách tiếp theo để báo hiệu có thể cuộn */
     width: calc(100% / 2.2);
+    height: 250px;
   }
 }
 
-/* Các style khác giữ nguyên */
-button.btn-info {
+button.btn-primary {
   width: 40px;
   height: 40px;
   font-size: 20px;
   opacity: 0.9;
   transition: opacity 0.2s;
 }
-
-button.btn-info:hover {
+button.btn-primary:hover {
   opacity: 1;
 }
 
-@media (max-width: 768px) {
-  button.btn-info {
-    width: 36px;
-    height: 36px;
-  }
-
-  .book-carousel-container {
-    padding-left: 1rem;
-    /* Thêm lại chút padding trên mobile để không quá sát lề */
-    padding-right: 1rem;
-  }
+.book-carousel-container {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 13px;
+  overflow: hidden;
 }
 </style>
