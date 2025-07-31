@@ -1,37 +1,38 @@
 <template>
-  
-    <div class="hot-book-wrapper bg-white shadow mx-3 p-4" style="border-radius: 24px;">
-      <div class="text-center mb-4">
-        <h2 class="text-primary fw-bold display-7">SÁCH NỔI BẬT</h2>
-        <div class="d-flex justify-content-center align-items-center gap-3">
-          <div class="bg-primary" style="width: 80px; height: 2px;"></div>
-          <div class="fs-3">📖</div>
-          <div class="bg-primary" style="width: 80px; height: 2px;"></div>
-        </div>
+  <div class="hot-book-wrapper bg-white shadow mx-3 p-4" style="border-radius: 24px;">
+    <div class="text-center mb-4">
+      <h2 class="text-primary fw-bold display-7">SÁCH NỔI BẬT</h2>
+      <div class="d-flex justify-content-center align-items-center gap-3">
+        <div class="bg-primary" style="width: 80px; height: 2px;"></div>
+        <div class="fs-3">📖</div>
+        <div class="bg-primary" style="width: 80px; height: 2px;"></div>
       </div>
-
-      <div
-        class="book-carousel-container position-relative px-3 py-3"
-        @mouseover="stopAutoSlide"
-        @mouseleave="startAutoSlide"
-      >
-        <div class="book-carousel" ref="carousel">
-          <div v-for="book in books" :key="book._id" class="book-card-wrapper">
-            <BookCard :book="book" @borrow-book="handleBorrow" />
-          </div>
-        </div>
-
-        <button class="btn btn-primary rounded-circle position-absolute top-50 start-0 translate-middle-y z-3" @click="prevSlide">❮</button>
-        <button class="btn btn-primary rounded-circle position-absolute top-50 end-0 translate-middle-y z-3" @click="nextSlide">❯</button>
-      </div>
-
-      <p v-if="books.length === 0" class="text-danger text-center fw-bold fs-5 mt-4">
-        Thư viện không có sách phù hợp.
-      </p>
     </div>
 
-</template>
+    <div
+      class="book-carousel-container position-relative px-5 py-3"
+      @mouseover="stopAutoSlide"
+      @mouseleave="startAutoSlide"
+    >
+      <div class="book-carousel" ref="carousel">
+        <div
+          v-for="(book, index) in books"
+          :key="book._id"
+          class="book-card-wrapper"
+        >
+          <BookCard :book="book" @borrow-book="handleBorrow" />
+        </div>
+      </div>
 
+      <button class="nav-btn left" @click="prevSlide">❮</button>
+      <button class="nav-btn right" @click="nextSlide">❯</button>
+    </div>
+
+    <p v-if="books.length === 0" class="text-danger text-center fw-bold fs-5 mt-4">
+      Thư viện không có sách phù hợp.
+    </p>
+  </div>
+</template>
 <script>
 import BookCard from "@/components/BookCard.vue";
 import { useBookStore } from "@/Store/Sach.store";
@@ -85,18 +86,19 @@ export default {
         alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
       }
     },
-    scrollCarousel(direction) {
+    scrollCarousel(itemsToScroll) {
       const carousel = this.$refs.carousel;
-      const firstCard = carousel?.querySelector(".book-card-wrapper");
-      if (!firstCard) return;
-      const scrollAmount = firstCard.offsetWidth + 16;
-      carousel.scrollBy({ left: scrollAmount * direction, behavior: "smooth" });
+      const card = carousel?.querySelector(".book-card-wrapper");
+      if (!card) return;
+      const gap = 12; // đúng với gap trong CSS
+      const cardWidth = card.offsetWidth + gap;
+      carousel.scrollBy({ left: cardWidth * itemsToScroll, behavior: "smooth" });
     },
     nextSlide() {
-      this.scrollCarousel(1);
+      this.scrollCarousel(5);
     },
     prevSlide() {
-      this.scrollCarousel(-1);
+      this.scrollCarousel(-5);
     },
     startAutoSlide() {
       this.stopAutoSlide();
@@ -106,9 +108,9 @@ export default {
         if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
           carousel.scrollTo({ left: 0, behavior: "smooth" });
         } else {
-          this.nextSlide();
+          this.scrollCarousel(1);
         }
-      }, 3000);
+      }, 10000); // 10s
     },
     stopAutoSlide() {
       clearInterval(this.autoSlideInterval);
@@ -122,21 +124,15 @@ export default {
   },
 };
 </script>
-
 <style scoped>
-.hot-book-wrapper {
-  border-radius: 24px;
-}
-
 .book-carousel {
   display: flex;
-  gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 1rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  align-items: stretch;
+  gap: 12px; /* dùng gap thay vì margin */
 }
 .book-carousel::-webkit-scrollbar {
   display: none;
@@ -144,40 +140,26 @@ export default {
 
 .book-card-wrapper {
   scroll-snap-align: start;
-  flex-shrink: 0;
+  flex: 0 0 calc((100% - 48px) / 5); /* 5 item, 4 khoảng cách = 4*12px */
+  height: 300px;
   display: flex;
-  height: 280px;
-  width: calc((100% - 64px) / 5);
 }
 
+/* Responsive: tự tính lại theo số item */
 @media (max-width: 1200px) {
   .book-card-wrapper {
-    width: calc((100% - 48px) / 4);
-    height: 270px;
+    flex: 0 0 calc((100% - 36px) / 4); /* 4 item, 3 khoảng cách */
   }
 }
 @media (max-width: 992px) {
   .book-card-wrapper {
-    width: calc((100% - 32px) / 3);
-    height: 260px;
+    flex: 0 0 calc((100% - 24px) / 3); /* 3 item */
   }
 }
 @media (max-width: 768px) {
   .book-card-wrapper {
-    width: calc(100% / 2.2);
-    height: 250px;
+    flex: 0 0 calc((100% - 12px) / 2); /* 2 item */
   }
-}
-
-button.btn-primary {
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
-  opacity: 0.9;
-  transition: opacity 0.2s;
-}
-button.btn-primary:hover {
-  opacity: 1;
 }
 
 .book-carousel-container {
@@ -185,5 +167,30 @@ button.btn-primary:hover {
   border: 1px solid #dee2e6;
   border-radius: 13px;
   overflow: hidden;
+  position: relative;
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  z-index: 10;
+  opacity: 0.85;
+}
+.nav-btn:hover {
+  opacity: 1;
+}
+.nav-btn.left {
+  left: 10px;
+}
+.nav-btn.right {
+  right: 10px;
 }
 </style>

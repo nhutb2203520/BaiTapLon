@@ -21,52 +21,43 @@
         </div>
       </section>
 
-      <!-- Welcome Message -->
-      <section class="container">
-        <div class="welcome-message">
-          <h2>Danh mục sách của thư viện</h2>
-          <p>Bạn có thể lựa chọn theo các danh mục bên dưới để bắt đầu khám phá.</p>
+      <!-- Thanh tìm kiếm -->
+      <section class="search-bar">
+        <div class="search-container">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="🔍 Tìm sách theo tên hoặc tác giả..."
+            class="search-input"
+          />
+          <button class="search-button" @click="triggerSearch">Tìm kiếm</button>
         </div>
       </section>
 
-      <!-- Sách nổi bật -->
-      <SachNoiBat />
-
-      <!-- Sách mới cập nhật -->
-      <section class="container">
+      <!-- Kết quả tìm kiếm -->
+      <div v-if="searchTriggeredQuery">
         <div class="section">
-          <h2 class="section-title">
-            <i class="fas fa-plus-circle"></i> Sách mới cập nhật
-          </h2>
+          <h2 class="section-title">Kết quả tìm kiếm</h2>
           <div class="books-grid">
-            <BookCard
-              v-for="book in recentBooks"
-              :key="book.id"
-              :book="book"
-              @borrow="borrowBook"
-              @view="viewDetails"
-            />
+            <div
+              class="book-card-wrapper"
+              v-for="book in filteredBooks"
+              :key="book._id"
+            >
+              <BookCard :book="book" />
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Tất cả sách thư viện -->
-      <section class="container">
-        <div class="section">
-          <h2 class="section-title">
-            <i class="fas fa-book"></i> Tất cả sách trong thư viện
-          </h2>
-          <div class="books-grid">
-            <BookCard
-              v-for="book in allBooks"
-              :key="book.id"
-              :book="book"
-              @borrow="borrowBook"
-              @view="viewDetails"
-            />
-          </div>
-        </div>
-      </section>
+      <!-- Nếu không tìm gì thì hiển thị phần còn lại -->
+      <template v-else>
+        <SachNoiBat />
+        <p></p>
+        <SachMoi />
+        <p></p>
+        <TatCaSach />
+      </template>
     </div>
 
     <!-- Footer -->
@@ -75,13 +66,41 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import NavBar from '@/components/Client/NavBar.vue'
 import Footer from '@/components/Client/Footer.vue'
 import BookCard from '@/components/BookCard.vue'
 import SachNoiBat from '@/components/Client/SachNoiBat.vue'
+import SachMoi from '@/components/Client/SachMoi.vue'
+import TatCaSach from '@/components/Client/TatCaSach.vue'
 import { useBookStore } from '@/Store/Sach.store'
 
 const bookStore = useBookStore()
+const allBooks = ref([])
+const searchQuery = ref('')
+const searchTriggeredQuery = ref('')
+
+onMounted(async () => {
+  try {
+    const result = await bookStore.fetchBooks()
+    allBooks.value = result.danhsachsach || []
+  } catch (error) {
+    console.error('Lỗi khi lấy sách:', error)
+  }
+})
+
+const triggerSearch = () => {
+  searchTriggeredQuery.value = searchQuery.value.trim().toLowerCase()
+}
+
+const filteredBooks = computed(() => {
+  if (!searchTriggeredQuery.value) return []
+  return allBooks.value.filter(book => {
+    const name = book.TenSach?.toLowerCase() || ''
+    const author = book.TacGia?.toLowerCase() || ''
+    return name.includes(searchTriggeredQuery.value) || author.includes(searchTriggeredQuery.value)
+  })
+})
 
 const stats = {
   totalBooks: 5000,
@@ -89,37 +108,11 @@ const stats = {
   totalMembers: 15240
 }
 
-const getStatLabel = (key) => {
-  return {
-    totalBooks: 'Tổng số sách',
-    availableBooks: 'Sách có sẵn',
-    totalMembers: 'Thành viên'
-  }[key] || ''
-}
-
-// Giả lập danh sách sách mới
-const recentBooks = [
-  { id: 11, MaSach: 11, TenSach: 'AI Thời Đại Mới', TacGia: 'Nguyễn Văn A', image: '/uploads/ai.jpg' },
-  { id: 12, MaSach: 12, TenSach: 'Lập trình Web', TacGia: 'Trần Văn B', image: '/uploads/web.jpg' }
-]
-
-// Giả lập danh sách tất cả sách
-const allBooks = [
-  { id: 1, MaSach: 1, TenSach: 'Đắc Nhân Tâm', TacGia: 'Dale Carnegie', image: '/uploads/dac-nhan-tam.jpg' },
-  { id: 2, MaSach: 2, TenSach: 'Tư Duy Nhanh và Chậm', TacGia: 'Daniel Kahneman', image: '/uploads/fast-slow.jpg' },
-  { id: 3, MaSach: 3, TenSach: 'Lập trình Python', TacGia: 'Lê Minh Hoàng', image: '/uploads/python.jpg' },
-  // ... thêm các sách khác nếu muốn
-]
-
-const borrowBook = (book) => {
-  if (book.status === 'available' || !book.status) {
-    alert(`Yêu cầu mượn sách: ${book.TenSach || book.title}`)
-  }
-}
-
-const viewDetails = (book) => {
-  alert(`Chi tiết sách:\nTiêu đề: ${book.TenSach || book.title}\nTác giả: ${book.TacGia || book.author}`)
-}
+const getStatLabel = (key) => ({
+  totalBooks: 'Tổng số sách',
+  availableBooks: 'Sách có sẵn',
+  totalMembers: 'Thành viên'
+}[key] || '')
 </script>
 
 <style scoped>
@@ -129,13 +122,7 @@ const viewDetails = (book) => {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #4e54c8, #8f94fb);
   min-height: 100vh;
-  padding: 100px;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  padding: 100px 20px;
 }
 
 .hero {
@@ -162,12 +149,15 @@ const viewDetails = (book) => {
   justify-content: center;
   gap: 3rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
 .hero-stat {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
   padding: 1rem 2rem;
+  color: #fff;
+  text-align: center;
 }
 
 .hero-stat-number {
@@ -179,13 +169,45 @@ const viewDetails = (book) => {
   font-size: 1rem;
 }
 
-.welcome-message {
+.search-bar {
   text-align: center;
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2rem;
-  border-radius: 1rem;
-  margin-bottom: 3rem;
+  margin: 2rem 0;
+}
+
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 300px;
+  padding: 16px 24px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.search-button {
+  padding: 16px 28px;
+  font-size: 16px;
+  background-color: #ffffff;
+  color: #4e54c8;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.search-button:hover {
+  background-color: #f0f0f0;
 }
 
 .section {
@@ -207,8 +229,36 @@ const viewDetails = (book) => {
 }
 
 .books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.book-card-wrapper {
+  flex: 0 0 calc((100% - 48px) / 5);
+  height: 300px;
+  display: flex;
+}
+
+@media (max-width: 1200px) {
+  .book-card-wrapper {
+    flex: 0 0 calc((100% - 36px) / 4);
+  }
+}
+@media (max-width: 992px) {
+  .book-card-wrapper {
+    flex: 0 0 calc((100% - 24px) / 3);
+  }
+}
+@media (max-width: 768px) {
+  .book-card-wrapper {
+    flex: 0 0 calc((100% - 12px) / 2);
+  }
+}
+@media (max-width: 576px) {
+  .book-card-wrapper {
+    flex: 0 0 100%;
+  }
 }
 </style>

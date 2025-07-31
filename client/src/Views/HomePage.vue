@@ -32,23 +32,8 @@
 
       <!-- Sách nổi bật -->
       <SachNoiBat />
-      <!-- Recent Books -->
-      <!-- <section class="container">
-        <div class="section">
-          <h2 class="section-title">
-            <i class="fas fa-plus-circle"></i> Sách mới cập nhật
-          </h2>
-          <div class="books-grid">
-            <BookCard
-              v-for="book in recentBooks"
-              :key="book.id"
-              :book="book"
-              @borrow="borrowBook"
-              @view="viewDetails"
-            />
-          </div>
-        </div>
-      </section> -->
+      <p></p>
+      <SachMoi />
     </div>
 
     <!-- Footer -->
@@ -62,6 +47,7 @@ import Footer from '@/components/Client/Footer.vue'
 
 import SachNoiBat from '../components/Client/SachNoiBat.vue'
 import { useBookStore } from '@/Store/Sach.store'
+import SachMoi from '../components/Client/SachMoi.vue'
 
 
 const bookStore = useBookStore()

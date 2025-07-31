@@ -12,6 +12,7 @@ import QuanLyDocGia from '../Views/QuanLyDocGia.vue'
 import DocGiaDangKy from '../components/Client/DocGiaDangKy.vue'
 import DanhMucSach from '../Views/DanhMucSach.vue'
 import LichSuMuonSach from '../components/Client/LichSuMuonSach.vue'
+import ChiTietSach from '../components/Client/ChiTietSach.vue'
 const routes = [
   { path: '/',
     name: HomePage,
@@ -71,7 +72,13 @@ const routes = [
     path: '/readers/lich-su-muon-sach',
     name: 'LichSuMuonSach',
     component: LichSuMuonSach
-  }
+  },{
+  path: '/book/:MaSach',
+  name: 'ChiTietSach',
+  component: ChiTietSach,
+  props: true
+}
+
 ]
 
 const router = createRouter({

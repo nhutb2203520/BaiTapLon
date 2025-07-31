@@ -1,16 +1,15 @@
 <template>
   <div class="bg-white border rounded-3 p-2 d-flex flex-column text-center align-items-center book-hover h-100">
-    <!-- Ảnh chiếm khoảng 50% -->
-    <div class="book-image-container mb-2" @click="goToDetail">
+    <!-- Ảnh bìa -->
+    <div class="book-cover mb-2" @click="goToDetail">
       <img
         :src="getImageUrl(book.image)"
         :alt="book.TenSach"
-        class="img-fluid rounded h-100 w-100 object-fit-cover"
         @error="handleImageError"
       />
     </div>
 
-    <!-- Nội dung chiếm 50% -->
+    <!-- Nội dung -->
     <div class="book-content w-100 d-flex flex-column justify-content-between">
       <h6 class="text-dark fw-semibold mb-1 text-center" style="min-height: 36px">
         {{ capitalizeWords(book.TenSach) }}
@@ -75,20 +74,27 @@ export default {
   height: 100%;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-
 .book-hover:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.book-image-container {
-  height: 50%;
+.book-cover {
   width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
+  border-radius: 8px;
+}
+.book-cover img {
+  height: 100%;
+  object-fit: contain;
 }
 
 .book-content {
-  height: 50%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
