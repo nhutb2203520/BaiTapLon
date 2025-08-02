@@ -74,7 +74,7 @@ const menuItems = [
 <style scoped>
 .sidebar {
   width: 260px;
-  top: 60px;
+  top: 48px;
   height: calc(100vh - 56px);
   transition: width 0.3s ease;
   z-index: 1060;

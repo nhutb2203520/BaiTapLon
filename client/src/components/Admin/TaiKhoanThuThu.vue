@@ -3,7 +3,11 @@
     <div class="profile-card card shadow p-4 rounded-4 w-100">
       <!-- Ảnh đại diện và tiêu đề -->
       <div class="text-center mb-4">
-        <img class="avatar mb-3" src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="User Avatar" />
+        <img
+          class="avatar mb-3"
+          src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png"
+          alt="User Avatar"
+        />
         <h4 class="fw-bold">Tài Khoản Thủ Thư</h4>
         <p class="text-muted">Thông tin chi tiết của bạn</p>
       </div>
@@ -11,7 +15,6 @@
       <!-- Thông tin cá nhân -->
       <div class="info-box p-4 rounded bg-light border">
         <h5 class="fw-semibold mb-3 text-primary text-center">Thông tin tài khoản</h5>
-
 
         <p v-if="staffInfo"><strong>Họ tên:</strong> {{ capitalizeWords(staffInfo.HoTenNV || '') }}</p>
         <p v-if="staffInfo"><strong>Chức vụ:</strong> {{ capitalizeWords(staffInfo.ChucVu || '') }}</p>
@@ -49,73 +52,56 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useAuthStore } from '@/Store/auth.store';
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/Store/auth.store'
 
-const authStore = useAuthStore();
-const loading = ref(false);
-const error = ref('');
+const authStore = useAuthStore()
+const loading = ref(false)
+const error = ref('')
+const staffInfo = computed(() => authStore.staffInfo)
 
-// ✅ SỬA: Lấy thông tin từ authStore.staffInfo thay vì gọi API
-const staffInfo = computed(() => authStore.staffInfo);
-
-// 🧠 Hàm decode JWT token
 function decodeToken(token) {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
         .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
         .join('')
-    );
-    return JSON.parse(jsonPayload);
+    )
+    return JSON.parse(jsonPayload)
   } catch (e) {
-    return {};
+    return {}
   }
 }
 
-// 🧠 Hàm định dạng ngày
 function formatDate(dateStr) {
-  if (!dateStr) return 'N/A';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('vi-VN');
+  if (!dateStr) return 'N/A'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('vi-VN')
 }
 
-// 🧠 Hàm viết hoa mỗi từ
 function capitalizeWords(str) {
-  if (!str) return '';
+  if (!str) return ''
   return str
     .toLowerCase()
     .split(' ')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+    .join(' ')
 }
 
-const isGoogle = computed(() => decodeToken(authStore.accessToken)?.type === 'google');
+const isGoogle = computed(() => decodeToken(authStore.accessToken)?.type === 'google')
 
-// ✅ SỬA: Không cần gọi API vì thông tin đã có trong authStore
-onMounted(async () => {
-  try {
-    loading.value = true;
-    
-    // Kiểm tra xem có thông tin staff không
-    if (!authStore.staffInfo || Object.keys(authStore.staffInfo).length === 0) {
-      error.value = 'Không tìm thấy thông tin thủ thư. Vui lòng đăng nhập lại.';
-      return;
-    }
-    
-    console.log('📋 Staff info loaded:', authStore.staffInfo);
-    
-  } catch (err) {
-    console.error('❌ Error loading staff info:', err);
-    error.value = 'Không thể tải thông tin người dùng!';
-  } finally {
-    loading.value = false;
+onMounted(() => {
+  loading.value = true
+  if (!authStore.staffInfo || Object.keys(authStore.staffInfo).length === 0) {
+    error.value = 'Không tìm thấy thông tin thủ thư. Vui lòng đăng nhập lại.'
   }
-});
+  loading.value = false
+})
 </script>
+
 <style scoped>
 .profile-wrapper {
   min-height: 100vh;

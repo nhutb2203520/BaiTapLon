@@ -103,7 +103,7 @@ const changeTab = (tab) => {
       router.push('/reader/account')
       break
     case 'signup':
-      router.push('/signup') // Cập nhật đúng path nếu khác
+      router.push('/reader/signup') // Cập nhật đúng path nếu khác
       break
   }
 }
