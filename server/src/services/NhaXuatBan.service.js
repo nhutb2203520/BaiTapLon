@@ -1,84 +1,39 @@
-const publisherModel = require('../models/NhaXuatBan.model')
+const publisherModel = require('../models/NhaXuatBan.model');
 
-module.exports = class publisherService {
+module.exports = class PublisherService {
+  async add(data) {
+    const publisher = await new publisherModel(data).save();
+    return { publisher, message: 'Thêm nhà xuất bản thành công!' };
+  }
 
-    async add(data) {
-        const newPublisher = new publisherModel(data)
-        const result = await newPublisher.save()
-        return {
-            publisher: newPublisher,
-            message:'Thêm nhà xuất bản thành công!'
-        }
-    }
+  async find(condition = {}) {
+    const publisher = await publisherModel.find(condition);
+    return { publisher, message: 'Lấy nhà xuất bản thành công!' };
+  }
 
-    async find(condition) {
-        
-        try {
-            const publishers = await publisherModel.find(condition);
-            
-            
-            const result = {
-                publisher: publishers,
-                message:'Lấy nhà xuất bản thành công!'
-            };
-            
-            return result;
-        } catch (error) {
-            throw error;
-        }
-    } 
+  async findByName(name) {
+    const publisher = await publisherModel.find({
+      TenNXB: { $regex: new RegExp(name, 'i') }
+    });
+    return { publisher, message: 'Lấy nhà xuất bản thành công!' };
+  }
 
-    async findByName(name) {
-    
-        
-        try {
-            
-            // ✅ FIXED: Gọi trực tiếp MongoDB
-            const publishers = await publisherModel.find({
-                TenNXB: { $regex: new RegExp(name, "i") }
-            });
-            
-            
-            return {
-                publisher: publishers,
-                message:'Lấy nhà xuất bản thành công!'
-            };
-        } catch (error) {
-            console.error("❌ Error in findByName():", error);
-            throw error;
-        }
-    }
-    
-    async update(data) {
-        
-        
-        const updatePublisher = await publisherModel.findOneAndUpdate(
-            {MaNXB: data.MaNXB},
-            { $set: { TenNXB: data.TenNXB, DiaChi: data.DiaChi }},
-            {returnDocument: "after"}
-        )
-        
-        
-        
-        return {
-            publisher: updatePublisher,
-            message: "Cập nhật nhà xuất bản thành công"
-        }
-    }
+  async update(data) {
+    const publisher = await publisherModel.findOneAndUpdate(
+      { MaNXB: data.MaNXB },
+      { TenNXB: data.TenNXB, DiaChi: data.DiaChi },
+      { returnDocument: 'after' }
+    );
+    return { publisher, message: 'Cập nhật nhà xuất bản thành công' };
+  }
 
-    async deleteAll() {
-        const result = await publisherModel.deleteMany({})
-        return result.deletedCount
-    }
+  async deleteAll() {
+    const { deletedCount } = await publisherModel.deleteMany({});
+    return deletedCount;
+  }
 
-    async delete(publisherCode) {
-       
-        
-        const deletedPublisher = await publisherModel.findOneAndDelete({MaNXB: publisherCode})
-        
-        return {
-            publisher: deletedPublisher,
-            message:'Xóa nhà xuất bản thành công'
-        }
-    }
-}
+  async delete(MaNXB) {
+    const publisher = await publisherModel.findOneAndDelete({ MaNXB });
+    return { publisher, message: 'Xóa nhà xuất bản thành công' };
+  }
+};

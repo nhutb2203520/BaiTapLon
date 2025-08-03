@@ -13,8 +13,6 @@ module.exports = class bookService {
             message: 'Lấy sách thành công!'
         }
     }
-
-    // ✅ THÊM: Method lấy sách nổi bật (nhiều lượt mượn nhất)
     async getHot() {
         const books = await bookModel.find()
             .populate({
@@ -24,14 +22,11 @@ module.exports = class bookService {
             })
             .sort({ SoLuongDaMuon: -1 }) // Sắp xếp theo số lượng đã mượn giảm dần
             .limit(10) // Lấy 10 sách nổi bật nhất
-
         return {
             danhsachsach: books,
             message: 'Lấy sách nổi bật thành công!'
         }
     }
-
-    // ✅ THÊM: Method lấy sách mới
     async getNew() {
         const books = await bookModel.find()
             .populate({
@@ -47,38 +42,29 @@ module.exports = class bookService {
             message: 'Lấy sách mới thành công!'
         }
     }
-
-    // ✅ THÊM: Method lấy sách theo ID
     async getById(MaSach) {
         const book = await bookModel.findOne({ MaSach: MaSach }).populate({
             path: 'MaNXB',
             localField: 'MaNXB',
             foreignField: 'MaNXB'
         })
-
         if (!book) {
             return {
                 success: false,
                 message: 'Không tìm thấy sách!'
             }
         }
-
         return {
             success: true,
             sach: book,
             message: 'Lấy thông tin sách thành công!'
         }
     }
-
     async add(data) {
-        console.log('📝 Service add data:', data);
-
         const isValid = await bookModel.findOne({
             $or: [{ TenSach: data.TenSach }, { MaSach: data.MaSach }]
         })
-
         if (!isValid) {
-            // ✅ THÊM: Đảm bảo image được lưu đúng
             const bookData = {
                 TenSach: data.TenSach,
                 DonGia: data.DonGia,
@@ -86,21 +72,16 @@ module.exports = class bookService {
                 NamXuatBan: data.NamXuatBan,
                 TacGia: data.TacGia,
                 MaNXB: data.MaNXB,
-                image: data.image || null, // ✅ Lưu URL ảnh hoặc null
+                image: data.image || null, 
                 SoLuongDaMuon: data.SoLuongDaMuon || 0
             }
-
             const newBook = new bookModel(bookData)
             const savedBook = await newBook.save()
-
             const returnBook = await savedBook.populate({
                 path: 'MaNXB',
                 localField: 'MaNXB',
                 foreignField: 'MaNXB'
             })
-
-            console.log('✅ Book saved successfully:', returnBook);
-
             return {
                 success: true,
                 sach: returnBook,
@@ -112,11 +93,9 @@ module.exports = class bookService {
             message: "Sách đã tồn tại !",
         }
     }
-
     async update(data) {
         console.log('✏️ Service update data:', data);
 
-        // ✅ THÊM: Tìm theo MaSach thay vì _id
         const updatedBook = await bookModel.findOneAndUpdate(
             { MaSach: data.MaSach },
             {
@@ -133,32 +112,27 @@ module.exports = class bookService {
             },
             { new: true }
         )
-
         if (!updatedBook) {
             return {
                 success: false,
                 message: 'Không tìm thấy sách !'
             }
         }
-
         await updatedBook.populate({
             path: 'MaNXB',
             localField: 'MaNXB',
             foreignField: 'MaNXB'
         })
-
         return {
             success: true,
             sach: updatedBook,
             message: 'Cập nhật sách thành công!'
         }
     }
-
     async delete(MaSach) {
         const deletedBook = await bookModel.findOneAndDelete({ MaSach: MaSach })
         return deletedBook
     }
-
     async deleteAll() {
         const result = await bookModel.deleteMany({})
         return result.deletedCount
