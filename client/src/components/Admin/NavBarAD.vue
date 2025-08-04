@@ -16,7 +16,7 @@
             @click.prevent="$emit('tab-changed', 'home')"
           >
             <i class="fas fa-home"></i>
-            <span>Trang Quản Lý</span>
+          <router-link class="dropdown-item" to="/admin/home">Trang Quản Lý</router-link>
           </a>
         </li>
         <li class="nav-item" @click.stop="toggleDropdown">
@@ -67,7 +67,7 @@ onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
 <style scoped>
 .navbar {
   background: #2855e9;
-  padding: 12px 24px;
+  padding: 8px 24px;
   position: fixed;
   top: 0;
   left: 0;
@@ -118,7 +118,7 @@ onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
 
 .nav-link.active,
 .nav-link:hover {
-  background-color: #4f46e5;
+  background-color: #908dcd;
   color: white;
 }
 
@@ -131,7 +131,7 @@ onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
   top: 120%;
   left: 50%;
   transform: translateX(-50%);
-  background: white;
+  background: rgb(253, 253, 253);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
@@ -142,15 +142,16 @@ onBeforeUnmount(() => window.removeEventListener('click', closeDropdown))
 .dropdown-item {
   display: block;
   padding: 10px 16px;
-  color: #374151;
+  color: #0b0606;
   text-decoration: none;
   border-radius: 8px;
   transition: 0.2s;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .dropdown-item:hover {
-  background: #f3f4f6;
+  background: #fefeff;
   color: #1d4ed8;
 }
 

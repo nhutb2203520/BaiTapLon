@@ -150,6 +150,35 @@ export const useMuonSachStore = defineStore("muonsach", {
         return { success: false, error: this.error };
       }
     },
+    async markReturned(borrowId) {
+  const authStore = useAuthStore();
+  const token = authStore.accessToken;
+
+  try {
+    const res = await axios.patch(`/borrow/admin/update`, {
+      borrowId,
+      TrangThai: 'returned' // 👈 Thêm dòng này
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const updated = res.data?.borrow;
+    if (updated) {
+      const index = this.listBorrow.findIndex(item => item._id === borrowId);
+      if (index !== -1) this.listBorrow[index] = updated;
+      return { success: true, data: res.data };
+    }
+  } catch (error) {
+    if (error.response?.status === 401) {
+      authStore.logout();
+      this.error = "Phiên đăng nhập đã hết hạn";
+    } else {
+      this.error = error.response?.data?.message || error.message || 'Lỗi không xác định';
+    }
+    return { success: false, error: this.error };
+  }
+},
+
 
     isBookBorrowedByUser(bookId) {
       return this.userBorrows.some(b =>

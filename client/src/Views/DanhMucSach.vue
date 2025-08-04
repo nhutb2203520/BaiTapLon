@@ -80,7 +80,7 @@ const filteredBooks = computed(() =>
 <style scoped>
 .home-page {
   background: linear-gradient(135deg, #4e54c8, #8f94fb);
-  padding: 60px 20px;
+  padding: 100px 20px;
   min-height: 100vh;
 }
 
