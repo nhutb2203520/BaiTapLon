@@ -17,5 +17,4 @@ const bookBorrowSchema = mongoose.Schema(
 )
 
 bookBorrowSchema.plugin(AutoIncrement, { inc_field: "MaMuonSach", start_seq: 1000 });
-
 module.exports = mongoose.models?.bookBorrowSchema || mongoose.model('bookBorrowSchema', bookBorrowSchema);

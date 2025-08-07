@@ -64,9 +64,10 @@
         </div>
         <div class="form-group mb-2">
           <label>Số lượng mượn:</label>
-          <select v-model="borrowQuantity" class="form-select">
-            <option v-for="n in Math.min(3, book.SoQuyen)" :key="n" :value="n">{{ n }} cuốn</option>
+          <select v-model="borrowQuantity" class="form-select" disabled>
+            <option value="1">1 cuốn</option>
           </select>
+
         </div>
         <div class="form-group mb-3">
           <label>Ngày trả dự kiến:</label>

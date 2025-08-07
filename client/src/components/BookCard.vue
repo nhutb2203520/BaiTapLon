@@ -1,6 +1,5 @@
 <template>
   <div class="bg-white border rounded-3 p-2 d-flex flex-column text-center align-items-center book-hover h-100">
-    <!-- Ảnh bìa -->
     <div class="book-cover mb-2" @click="goToDetail">
       <img :src="getImageUrl(book.image)" :alt="book.TenSach" @error="handleImageError" />
     </div>
@@ -17,8 +16,7 @@
         <i class="fas fa-book me-1"></i>
         {{ book.SoQuyen > 0 ? `Còn ${book.SoQuyen} cuốn` : 'Hết sách' }}
       </span>
-
-      <!-- Nút hành động -->
+=
       <div class="d-flex gap-1 w-100 mt-auto">
         <button
           class="btn btn-sm btn-primary flex-fill"
@@ -36,8 +34,7 @@
           <i class="fas fa-info-circle me-1"></i> Chi tiết
         </button>
       </div>
-
-      <!-- Nhắc đăng nhập -->
+=
       <small v-if="!isLoggedIn" class="text-muted mt-1">Vui lòng đăng nhập để mượn sách</small>
     </div>
 
@@ -71,9 +68,10 @@
               <div class="row">
                 <div class="col-md-6">
                   <label class="form-label">Số lượng mượn:</label>
-                  <select v-model="borrowQuantity" class="form-select">
-                    <option v-for="n in Math.min(3, book.SoQuyen)" :key="n" :value="n">{{ n }} cuốn</option>
-                  </select>
+                  <select v-model="borrowQuantity" class="form-select" disabled>
+                  <option value="1">1 cuốn</option>
+                </select>
+
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Ngày dự kiến trả:</label>

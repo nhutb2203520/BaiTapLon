@@ -17,7 +17,6 @@ module.exports.signUp =  async (req, res, next ) =>{
         return next(new ApiError(500, "An error occurred while Signing up !!!"));
     }
 }
-
 //POST [authen/signin]
 module.exports.signIn = async (req, res, next) => {
   try {
@@ -36,8 +35,6 @@ module.exports.signIn = async (req, res, next) => {
     return next(new ApiError(500, "An error occurred while Signing in !!!"));
   }
 }
-
-
 //POST [authen/staffsignin]
 module.exports.staffSignIn = async (req, res, next) => {
   try {
@@ -55,8 +52,6 @@ module.exports.staffSignIn = async (req, res, next) => {
     return next(new ApiError(500, "An error occurred while Signing in !!!"));
   }
 };
-
-
 //POST [authen/staffsignup]
 module.exports.staffSignUp = async (req, res, next) =>{
     try {

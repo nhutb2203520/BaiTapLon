@@ -9,5 +9,5 @@ module.exports = (app) => {
     app.use('/books', bookRouter)
     app.use('/borrow', bookBorrwRouter)
     app.use('/publisher', publisherRouter)
-    app.use('/readers', docGiaRouter) // Thêm endpoint /readers
+    app.use('/readers', docGiaRouter) 
 }

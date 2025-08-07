@@ -2,7 +2,6 @@ const bookBorrowService = require('../services/TheoDoiMuonSach.service')
 const jwt = require('jsonwebtoken')
 const ApiError = require('../ApiError')
 
-// ========== TOKEN HELPERS ==========
 const extractToken = (req) => {
   let token = req.headers['authorization'] || ''
   return token.startsWith('Bearer ') ? token.slice(7) : token
@@ -22,7 +21,6 @@ const verifyToken = (req, checkAdmin = false) => {
   })
 }
 
-// ========== USER CONTROLLERS ==========
 
 // [GET] /borrow/user
 module.exports.getAllForUser = async (req, res, next) => {
@@ -60,8 +58,6 @@ module.exports.deleteBorrowForUser = async (req, res, next) => {
   }
 }
 
-// ========== ADMIN CONTROLLERS ==========
-
 // [GET] /borrow/admin
 module.exports.getAllForAdmin = async (req, res, next) => {
   try {
@@ -85,7 +81,6 @@ module.exports.deleteBorrowForAdmin = async (req, res, next) => {
     next(new ApiError(401, error))
   }
 }
-
 // [PATCH] /borrow/admin
 module.exports.updateBorrowForAdmin = async (req, res, next) => {
   try {

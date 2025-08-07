@@ -11,7 +11,6 @@ const uploadRouter = require('./src/routes/Upload.route');
 
 require("dotenv").config();
 database.connect();
-
 // CORS config
 app.use(cors({
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
@@ -31,16 +30,13 @@ app.use('/uploads', express.static(uploadsDir));
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 // Routes
 app.use('/upload', uploadRouter);
 route(app);
-
 // 404 handler
 app.use((req, res, next) => {
   return next(new ApiError(404, `Route not found: ${req.method} ${req.path}`));
 });
-
 // Global error handler
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {

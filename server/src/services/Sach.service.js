@@ -94,8 +94,6 @@ module.exports = class bookService {
         }
     }
     async update(data) {
-        console.log('✏️ Service update data:', data);
-
         const updatedBook = await bookModel.findOneAndUpdate(
             { MaSach: data.MaSach },
             {
