@@ -125,7 +125,7 @@ const handleLogin = async () => {
 }
 
 const goToRegister = () => {
-  router.push('/register-reader')
+  router.push('/reader/signup')
 }
 </script>
 

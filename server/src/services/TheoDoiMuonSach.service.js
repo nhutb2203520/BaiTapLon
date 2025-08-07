@@ -9,7 +9,6 @@ module.exports = class bookBorrowService {
       .populate('MaDocGia', ['HoLot', 'Ten', 'NgaySinh', 'GioiTinh', 'DiaChi', 'SoDienThoai']);
     return { borrows: borrowList, message: 'Lấy thông tin mượn sách thành công!' };
   }
-
   async deleteBorrowForAdmin(borrowId) {
     const borrow = await bookBorrowModel.findOneAndDelete({ _id: borrowId });
     if (borrow && !['paid', 'returned'].includes(borrow.TrangThai)) {
@@ -22,7 +21,6 @@ module.exports = class bookBorrowService {
     }
     return { borrow, message: 'Xóa mượn sách thành công!' };
   }
-
   async updateBorrowForAdmin(staffId, updateData) {
     const { borrowId, TrangThai } = updateData;
     if (!borrowId || !TrangThai) throw new Error('Thiếu borrowId hoặc trạng thái!');
@@ -59,7 +57,6 @@ module.exports = class bookBorrowService {
     return { success: true, borrow: borrowDetail, message: 'Cập nhật trạng thái thành công!' };
   }
 
-  // Legacy method (giữ nguyên nếu cần)
   async updateBorrowForAdminLegacy(staffId, updateData) {
     if (updateData.TrangThai === 'borrow') {
       const borrow = await bookBorrowModel.findOneAndUpdate(
@@ -133,13 +130,11 @@ module.exports = class bookBorrowService {
       SoLuongMuon: data.SoLuongMuon || 1,
       TrangThai: 'pending'
     });
-
     await newBorrow.save();
 
     await bookModel.findByIdAndUpdate(data.MaSach, {
       $set: { SoLuongDaMuon: (book.SoLuongDaMuon || 0) + newBorrow.SoLuongMuon }
     });
-
     const populated = await bookBorrowModel.findById(newBorrow._id).populate('MaSach');
     return { success: true, borrow: populated, message: 'Gửi yêu cầu mượn sách thành công!' };
   }

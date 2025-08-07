@@ -22,12 +22,9 @@ module.exports.signUp =  async (req, res, next ) =>{
 module.exports.signIn = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log("📥 Body nhận được (reader):", data);
-    
     const user = new userService();
     const signInResult = await user.signIn(data);
     
-    console.log("📤 Kết quả signIn (reader):", signInResult);
     
     if (signInResult.success) {
       res.status(200).json(signInResult);
@@ -44,12 +41,9 @@ module.exports.signIn = async (req, res, next) => {
 //POST [authen/staffsignin]
 module.exports.staffSignIn = async (req, res, next) => {
   try {
-    console.log("📥 Body nhận được (staff):", req.body);
     const data = req.body;
     const staff = new staffService();
     const signInResult = await staff.signIn(data);
-    
-    console.log("📤 Kết quả signIn (staff):", signInResult);
     
     if (signInResult.success) {
       res.status(200).json(signInResult);

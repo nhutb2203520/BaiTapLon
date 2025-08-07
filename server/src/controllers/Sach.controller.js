@@ -52,35 +52,28 @@ module.exports.getNew = (req, res) => handleRequest(res, () => bookservice.getNe
 module.exports.getById = (req, res) => handleRequest(res, () => bookservice.getById(req.params.MaSach), 'lấy thông tin sách');
 
 module.exports.add = (req, res) => {
-  console.log('📝 Thêm sách:', req.body);
   handleRequest(res, () => bookservice.add(req.body), 'thêm sách');
 };
 
 module.exports.update = (req, res) => {
-  console.log('✏️ Cập nhật sách:', req.params.MaSach);
   handleRequest(res, () => bookservice.update({ MaSach: req.params.MaSach, ...req.body }), 'cập nhật sách');
 };
 
 module.exports.delete = async (req, res) => {
   try {
     const { MaSach } = req.params;
-    console.log('🗑️ Xóa sách:', MaSach);
-
     const book = await bookservice.getById(MaSach);
     const result = await bookservice.delete(MaSach);
-
     if (book?.sach?.image) {
       const imagePath = path.join(__dirname, '..', book.sach.image);
       if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
     }
-
     res.json(result ? { success: true, message: 'Xóa sách thành công' } : { success: false, message: 'Không tìm thấy sách' });
   } catch (error) {
     console.error('❌ Lỗi khi xóa sách:', error);
     res.status(500).json({ success: false, message: 'Lỗi khi xóa sách' });
   }
 };
-
 module.exports.deleteAll = (req, res) => {
   handleRequest(res, async () => {
     const deleted = await bookservice.deleteAll();
